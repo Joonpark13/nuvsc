@@ -1,9 +1,11 @@
 var idbSupported = false;
 var db;
 
-var current_term = "";
+var current_term = 0;
 var current_school = "";
 var current_subject = [];
+var current_temp = [];
+var comp_selected = true;
 
 function parseTextList(li){
     if (li[0] == '[' && li[li.length - 1] == ']'){
@@ -45,27 +47,45 @@ function insertAfter(newNode, referenceNode){
     referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
 
-function show_subjects(input){
-    $('.school_box').css({'display':'none'});
-    current_school = input.getAttribute('id');
+function set_current_term(){
+    $.get('/current_term', function(termid){
+        current_term = parseInt(termid);
+    });
+}
 
-    $.get("/subjects/" + current_school, function(subjects){
-        // Back link
-        var back = document.createElement('div');
-        back.setAttribute('class', 'subject_box');
-        //TODO change this to creating a button using javascript then appending child
-        back.innerHTML = "<button type='button' class='btn btn-default btn-sm' onclick='back(this)'>Back</button>";
-        document.getElementById("visual_course_finder").appendChild(back);
-        $('#visual_course_finder').append("<br class='subject_box'>");
-        // Generate subject links
-        var subjects_list = JSON.parse(subjects);
-        for (var i = 0; i < subjects_list.length; i++){
+// Show Subjects
+$(document).on('click', '.school_button', function(){
+    $('.school_box').css({'display':'none'});
+    current_school = this.getAttribute('id');
+
+    // Back link
+    var back = document.createElement('div');
+    back.setAttribute('class', 'subject_box');
+    //TODO change this to creating a button using javascript then appending child
+    back.innerHTML = "<button type='button' class='btn btn-default btn-sm' onclick='back(this)'>Back</button>";
+    document.getElementById("visual_course_finder").appendChild(back);
+    $('#visual_course_finder').append("<br class='subject_box'>");
+
+    var transaction = db.transaction(["subject"], "readonly");
+    var store = transaction.objectStore("subject");
+    var index = store.index("school_symbol");
+    var keyRange = IDBKeyRange.only(current_school);
+    index.openCursor(keyRange).onsuccess = function(e){
+        var cursor = e.target.result;
+        if (cursor){
+            if (cursor.value['term_id'] == current_term){
+                // Generate subject links
                 var subject_box = document.createElement('div');
                 subject_box.setAttribute('class', 'subject_box');
-                subject_box.setAttribute('id', subjects_list[i]['symbol']);
-                subject_box.innerHTML = "<button type='button' class='btn btn-primary btn-xs btn-block subject_btn' onclick='show_courses(this)'>" + subjects_list[i]['name'] + "</button>";
+                subject_box.setAttribute('id', cursor.value['subject_symbol']);
+                subject_box.innerHTML = "<button type='button' class='subject_btn btn btn-primary btn-xs btn-block'>" + cursor.value['name'] + "</button>";
                 document.getElementById("visual_course_finder").appendChild(subject_box);
+            }
+            cursor.continue();
         }
+    }
+
+    transaction.oncomplete = function(){
         var btt_div = document.createElement('div');
         btt_div.setAttribute('class', 'back_to_top subject_box');
         // Back to top button
@@ -77,112 +97,254 @@ function show_subjects(input){
         
         btt_div.appendChild(back_to_top);
         document.getElementById("visual_course_finder").appendChild(btt_div);
-    });
-}
+    };
+});
 
-function show_courses(input){
+// Show Courses
+$(document).on('click', '.subject_btn', function(){
     // Go through list of open subjects and check if it's already open
-    if (checkListedCourses(input)){ return; }
+    if (checkListedCourses(this)){ return; }
     // Add courses under subject heading
-    current_subject.push(input.parentElement.getAttribute('id'));
+    current_subject.push(this.parentElement.getAttribute('id'));
 
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function(){
-        if (xhttp.readyState == 4 && xhttp.status == 200){
-            text_data = xhttp.responseText;
-            courses_list = parseTextList(text_data);
-
-            // Get all the subject boxes
-            var subjects = document.getElementsByClassName("subject_box");
-            var subject_box_obj = {};
-            for (var j = 0; j < subjects.length; j++){
-                // Make sure it's being appended to the subject, not the school 
-                // (Some schools have same symbol as some subjects)
-                if (subjects[j].getAttribute('id') == current_subject[current_subject.length - 1]){
-                    // Choose the right subject_box
-                    subject_box_obj = subjects[j];
-                }
-            }
-            // Make a ul element
-            var subject_ul = document.createElement('ul');
-            subject_ul.setAttribute('id', courses_list[0]['subject'] + "_ul");
-            // Put the ul element inside of subject_box
-            subject_box_obj.appendChild(subject_ul);
-            // For every course in subject
-            for (var i = 0; i < courses_list.length; i++){
-                var course = courses_list[i];
-                // Make course link
-                var course_link = document.createElement('a');
-                course_link.setAttribute('id', course['symbol']);
-                course_link.setAttribute('class', 'course_link');
-                course_link.setAttribute('onclick', "show_sections(this)");
-                course_link.setAttribute('data-toggle', 'modal');
-                course_link.setAttribute('data-target', '#sections_modal');
-                course_link.setAttribute('href', 'javascript:;');
-                course_link.innerHTML = course['name'];
-                // Put link inside li element
-                var course_li = document.createElement('li');
-                course_li.appendChild(course_link);
-                // Put li element inside ul
-                subject_ul.appendChild(course_li);
-            }
+    // Get all the subject boxes
+    var subjects = document.getElementsByClassName("subject_box");
+    var subject_box_obj = {};
+    for (var j = 0; j < subjects.length; j++){
+        // Make sure it's being appended to the subject, not the school 
+        // (Some schools have same symbol as some subjects)
+        if (subjects[j].getAttribute('id') == current_subject[current_subject.length - 1]){
+            // Choose the right subject_box
+            subject_box_obj = subjects[j];
         }
     }
-    xhttp.open("GET", "/courses/" + current_subject[current_subject.length - 1], true);
-    xhttp.send();
-}
+    // Make a ul element
+    var subject_ul = document.createElement('ul');
+    subject_ul.setAttribute('id', this.parentElement.getAttribute('id') + "_ul");
+    // Put the ul element inside of subject_box
+    subject_box_obj.appendChild(subject_ul);
+    // For every course in subject
+    var transaction = db.transaction(["course"], "readonly");
+    var store = transaction.objectStore("course");
+    var index = store.index("subject_symbol");
+    var keyRange = IDBKeyRange.only(current_subject[current_subject.length - 1]);
+    index.openCursor(keyRange).onsuccess = function(e){
+        var cursor = e.target.result;
+        if (cursor){
+            var course = cursor.value;
+            // Make course link
+            var course_link = document.createElement('a');
+            course_link.setAttribute('id', course['course_symbol']);
+            course_link.setAttribute('class', 'course_link');
+            course_link.setAttribute('onclick', "show_sections(this.id)");
+            course_link.setAttribute('data-toggle', 'modal');
+            course_link.setAttribute('data-target', '#sections_modal');
+            course_link.setAttribute('href', 'javascript:;');
+            course_link.innerHTML = course['course_name'];
+            // Put link inside li element
+            var course_li = document.createElement('li');
+            course_li.appendChild(course_link);
+            // Put li element inside ul
+            subject_ul.appendChild(course_li);
+            cursor.continue();
+        }
+    };
+});
 
-function show_sections(input){
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function(){
-        if (xhttp.readyState == 4 && xhttp.status == 200){
-            // Get ajax sections info
-            text_data = xhttp.responseText;
-            sections_list = parseTextList(text_data);
-            // clear modal
-            var modal_ul = document.getElementById('modal_ul');
-            var modal_children = modal_ul.children;
-            while (modal_ul.firstChild){
-                modal_ul.removeChild(modal_ul.firstChild);
-            }
-            // Set modal title
-            document.getElementById('modal_title').innerHTML = sections_list[0]['course'];
-            // turn into html section links
-            for (var i = 0; i < sections_list.length; i++){
-                var section = sections_list[i];
-                var section_link = document.createElement('a');
-                section_link.setAttribute('id', section['id']);
-                section_link.setAttribute('class', 'section_link');
-                section_link.setAttribute('onclick', "add_section_visual(this.id)");
-                section_link.setAttribute('href', 'javascript:;');
-                var times = section['start_time'] + "-" + section['end_time'];
-                if (section['start_time'] == 'None'){
-                    times = "";
-                }
-                section_link.innerHTML = "Section " + section['section'] + "  " + section['dow'] + " " + times + "  " + section['instructor'];
-                // Check if course is aleady in cart
-                var sections_in_cart = document.getElementById("cart").children;
-                for (var j = 0; j < sections_in_cart.length; j++){
-                    // If yes, make link red
-                    if (sections_in_cart[j].id == section['id'] && sections_in_cart[j].getAttribute('class').indexOf("section_cart") != -1){
-                        section_link.style.color = 'red';
-                    }
-                }
-
-                var li = document.createElement('li');
-                li.setAttribute('id', section['id'] + '_li');
-                li.setAttribute('class', 'section_li');
-
-                // insert html section links to dialog div
-                li.appendChild(section_link);
-                document.getElementById('modal_ul').appendChild(li);
-            }
+function add_section_temp(id){
+    // Check if course is aleady in cart
+    var sections_in_cart = document.getElementById("cart").children;
+    for (var i = 0; i < sections_in_cart.length; i++){
+        if (sections_in_cart[i].id == id){
+            return;
         }
     }
-    xhttp.open("GET", "/sections/" + input.id, true);
-    xhttp.send();
+
+    var transaction = db.transaction(["section"], "readonly");
+    var store = transaction.objectStore("section");
+    var getSection = store.get(id);
+    getSection.onsuccess = function(e){
+        var section = e.target.result;
+        var start_formatted = "2015-10-09" + 'T' + section['start_time'] + ':00';
+        var end_formatted = "2015-10-09" + 'T' + section['end_time'] + ':00';
+
+        // Adding course to calendar
+        if (section['dow'] == '[]'){
+            var unscheduled_section = document.createElement('div');
+            unscheduled_section.setAttribute('id', "temp_" + id);
+            unscheduled_section.innerHTML = "<p>" + section['course'] + "</p>";
+            document.getElementById("unscheduled").appendChild(unscheduled_section);
+        }
+        else {
+            var section_event = {
+                title: section['course'],
+                id: "temp_" + id,
+                //TODO add start and end date functionality
+                start: start_formatted,
+                end: end_formatted,
+                dow: section['dow'],
+                section: section['section'],
+                instructor: section['instructor'],
+                room: section['room'],
+                overview: section['overview'],
+                requirements: section['requirements']
+            }
+            $('#calendar').fullCalendar('renderEvent', section_event);
+        }
+        //TODO Add a temporarily increasing number of courses and hours per week
+    }
 }
 
+function remove_section_temp(id){
+    // Remove event from calendar
+    $('#calendar').fullCalendar('removeEvents', idOrFilter = "temp_" + id);
+    // If the event is unscheduled it, remove it from the unscheduled section
+    var unscheduled_children = document.getElementById("unscheduled").children;
+    for (var i = 0; i < unscheduled_children.length; i++){
+        if (unscheduled_children[i].getAttribute('id') == "temp_" + id){
+            unscheduled_children[i].remove();
+        }
+    }
+}
+
+// Closure helper methods
+function call_add_section_temp(id){
+    return function(){
+        add_section_temp(id);
+    };
+}
+
+function call_remove_section_temp(id){
+    return function(){
+        remove_section_temp(id);
+    };
+}
+
+function show_sections(inputid){
+    // clear modal
+    var modal_ul = document.getElementById('modal_ul');
+    var modal_children = modal_ul.children;
+    while (modal_ul.firstChild){
+        modal_ul.removeChild(modal_ul.firstChild);
+    }
+    // Set modal title
+    var transaction_title = db.transaction(["section"], "readonly");
+    var store_title = transaction_title.objectStore("section");
+    var indexTitle = store_title.index("course_symbol");
+    var getTitle = indexTitle.get(inputid);
+    getTitle.onsuccess = function(e){
+        document.getElementById('modal_title').innerHTML = "<b>" + e.target.result['course'] + "</b>";
+    }
+    // turn into html section links
+
+    var transaction = db.transaction(["section"], "readonly");
+    var store = transaction.objectStore("section");
+    var index = store.index("course_symbol");
+    var keyRange = IDBKeyRange.only(inputid);
+    index.openCursor(keyRange).onsuccess = function(e){
+        var cursor = e.target.result;
+        if (cursor){
+            var section = cursor.value;
+            var section_link = document.createElement('a');
+            section_link.setAttribute('id', section['section_id']);
+            section_link.setAttribute('class', 'section_link');
+            section_link.setAttribute('onclick', "add_section_visual(this.id)");
+            section_link.setAttribute('href', 'javascript:;');
+            var times = section['start_time'] + "-" + section['end_time'];
+            if (section['start_time'] == 'None'){
+                times = "";
+            }
+            var days = section["meeting_days"];
+            if (section['meeting_days'] == null){
+                 days = "";
+            }
+            section_link.innerHTML = "Section " + section['section'] + "  " + days + " " + times + "  " + section['instructor'];
+            // Check if course is aleady in cart
+            var sections_in_cart = document.getElementById("cart").children;
+            for (var j = 0; j < sections_in_cart.length; j++){
+                // If yes, make link red
+                if (sections_in_cart[j].id == section['id'] && sections_in_cart[j].getAttribute('class').indexOf("section_cart") != -1){
+                    section_link.style.color = 'red';
+                }
+            }
+
+            var li = document.createElement('li');
+            li.setAttribute('id', section['section_id'] + '_li');
+            li.setAttribute('class', 'section_li');
+
+
+            // insert html section links to dialog div
+            li.appendChild(section_link);
+
+            var id = section['section_id'];
+
+            // hover functionality
+            $(section_link).hoverIntent(call_add_section_temp.call(this, id), call_remove_section_temp.call(this, id));
+
+            document.getElementById('modal_ul').appendChild(li);
+            cursor.continue();
+        }
+    };
+}
+
+function add_component_temp(symbol, id){
+    var comp_link = document.getElementById(symbol);
+	if (comp_link.style.color == 'red'){
+            return;
+	}
+
+    var transaction = db.transaction(["component"], "readonly");
+    var store = transaction.objectStore("component");
+    var getComponent = store.get(symbol);
+    getComponent.onsuccess = function(e){
+        var comp = e.target.result;
+        
+        var start_formatted = "2015-10-09" + 'T' + comp['start_time'] + ':00';
+        var end_formatted = "2015-10-09" + 'T' + comp['end_time'] + ':00';
+
+        // Adding course to calendar
+        if (comp['dow'] != '[]'){
+            var comp_event = {
+                title: comp['course'],
+                id: "temp_" + id + "_comp",
+                //TODO add start and end date functionality
+                start: start_formatted,
+                end: end_formatted,
+                component: comp['component'],
+                dow: comp['dow'],
+                section: comp['section'],
+                room: comp['room']
+            }
+            $('#calendar').fullCalendar('renderEvent', comp_event);
+        }
+    }
+}
+
+function remove_component_temp(id){
+    // Remove event from calendar
+    $('#calendar').fullCalendar('removeEvents', idOrFilter = "temp_" + id + "_comp");
+}
+
+// Closure helper methods
+function call_add_comp_temp(symbol, id){
+    return function(){
+        add_component_temp(symbol, id);
+    };
+}
+
+function call_remove_comp_temp(id){
+    return function(){
+        remove_component_temp(id);
+    };
+}
+
+function call_add_section(id){
+    return function(){
+        add_function(id);
+    };
+}
+
+// Show components of section
 function add_section_visual(id){
     // Check if course is aleady in cart
     var sections_in_cart = document.getElementById("cart").children;
@@ -200,10 +362,27 @@ function add_section_visual(id){
             section_link = section_links[i];
         }
     }
+    section_link.style.color = 'red';
 
-    $.get("/components/" + id, function(components_data){
-        if (components_data != "{}"){
-            var components = parseTextList(components_data)[0];
+    var components = [];
+    var transaction = db.transaction(['component'], 'readonly');
+    var store = transaction.objectStore('component');
+    //var index = store.index('section_id');
+    //var keyRange = IDBKeyRange.only(id);
+    store.openCursor().onsuccess = function(e){
+        var cursor = e.target.result;
+        if (cursor){
+            if (cursor.value['section_id'] == id){
+                components.push(cursor.value);
+            }
+            cursor.continue();
+        }
+    }
+
+    transaction.oncomplete = function(){
+        if (components.length != 0){
+            comp_selected = false;
+
             var comp_panel = document.createElement('div');
             comp_panel.setAttribute('class', 'panel panel-default');
             var comp_heading = document.createElement('div');
@@ -213,66 +392,53 @@ function add_section_visual(id){
             comp_body.setAttribute('class', 'panel-body');
             comp_panel.appendChild(comp_heading);
             comp_panel.appendChild(comp_body);
-            for (var key in components){
+            for (var i = 0; i < components.length; i++){
                 var comp_link = document.createElement('a');
-                comp_link.setAttribute('id', components[key]);
+                comp_link.setAttribute('id', components[i]['component_symbol']);
+                comp_link.setAttribute('class', "component_link");
                 comp_link.setAttribute('href', 'javascript:;');
                 comp_link.style.display = 'block';
-                var func_str = "add_component('" + components[key] + "', " + id + ")";
-                comp_link.setAttribute('onclick', func_str);
-                comp_link.innerHTML = components[key];
+                comp_link.innerHTML = "<b>" + components[i]['component'] + ":</b> Section " + components[i]['component_section'] + ", " + components[i]['meeting_days'] + " " + components[i]['start_time'] + "-" + components[i]['end_time'] + ", " + components[i]['room'];
                 comp_body.appendChild(comp_link);
+                // hover functionality
+                $(comp_link).hoverIntent(
+                    call_add_comp_temp.call(this, components[i]['component_symbol'], id),
+                    call_remove_comp_temp.call(this, id)
+                );
             }
             insertAfter(comp_panel, section_link);
-        } else {
+            //call_add_section.call(this, id);
             add_section(id);
+        } else{
+            add_section(id);
+            $('#sections_modal').modal('hide')
         }
-    });
+    }
 }
 
-function add_section_search(id){
-    $.get("/components/" + id, function(components_data){
-        if (components_data != "{}"){
-            // clear modal
-            var modal_ul = document.getElementById('modal_ul');
-            var modal_children = modal_ul.children;
-            while (modal_ul.firstChild){
-                modal_ul.removeChild(modal_ul.firstChild);
-            }
-            // Set modal title
-            document.getElementById('modal_title').innerHTML = "Choose a component:";
+// Add component
+$(document).on('click', '.component_link', function(){
+    var symbol = this.id;
+    // Extract id from component symbol
+    var id = symbol.split("_")[0];
+    comp_selected = true;
+    var comp_link = document.getElementById(symbol);
 
-            var components = parseTextList(components_data)[0];
-            for (var key in components){
-                var comp_link = document.createElement('a');
-                comp_link.setAttribute('id', components[key]);
-                comp_link.setAttribute('href', 'javascript:;');
-                comp_link.style.display = 'block';
-                var func_str = "add_component('" + components[key] + "', " + id + ")";
-                comp_link.setAttribute('onclick', func_str);
-                comp_link.innerHTML = components[key];
-                document.getElementById('modal_ul').appendChild(comp_link);
-            }
-        } else {
-            add_section(id);
-        }
-    });
-}
-
-function add_component(full_name, id){
-    var comp_link = document.getElementById(full_name);
 	if (comp_link.style.color == 'red'){
             window.alert("This course is already in your cart.");
             return;
 	}
     comp_link.style.color = 'red';
 
-    $.get("/component/" + full_name + "/section/" + id, function(comp_data){
-        var comp = parseTextList(comp_data)[0];
-        
+    var transaction = db.transaction(['component'], 'readonly');
+    var store = transaction.objectStore('component');
+    var getComp = store.get(symbol);
+    getComp.onsuccess = function(e){
+        var comp = e.target.result;
+
         // Store to local storage
         if (typeof(Storage) !== "undefined"){
-            localStorage.setItem("component_" + id.toString(), JSON.stringify({'full_name':full_name, 'id':id, 'data':comp}));
+            localStorage.setItem("component_" + id.toString(), JSON.stringify({'symbol':symbol, 'id':id, 'data':comp}));
         }
 
         var start_formatted = "2015-10-09" + 'T' + comp['start_time'] + ':00';
@@ -282,7 +448,7 @@ function add_component(full_name, id){
         if (comp['dow'] != '[]'){
             var comp_event = {
                 title: comp['course'],
-                id: id,
+                id: id + "_comp",
                 //TODO add start and end date functionality
                 start: start_formatted,
                 end: end_formatted,
@@ -293,12 +459,11 @@ function add_component(full_name, id){
             }
             $('#calendar').fullCalendar('renderEvent', comp_event, 'stick');
         }
+        $('#sections_modal').modal('hide')
+    }
+});
 
-        add_section(id);
-    });
-}
-
-function re_add_component(full_name, id, data){
+function re_add_component(symbol, id, data){
     var comp = data;
     
     var start_formatted = "2015-10-09" + 'T' + comp['start_time'] + ':00';
@@ -308,7 +473,7 @@ function re_add_component(full_name, id, data){
     if (comp['dow'] != '[]'){
         var comp_event = {
             title: comp['course'],
-            id: id,
+            id: id + "_comp",
             //TODO add start and end date functionality
             start: start_formatted,
             end: end_formatted,
@@ -331,8 +496,42 @@ function add_section(id){
         }
     }
 
-    $.get("/section/" + id, function(section_request_data){
-        $.get("/descriptions/" + id, function(descriptions_data){
+    var section = {};
+    var descriptions = [];
+
+    var transaction = db.transaction(['section'], 'readonly');
+    var store = transaction.objectStore('section');
+    var index = store.index("section_id");
+    index.openCursor().onsuccess = function(e){
+        var cursor = e.target.result;
+        if (cursor){
+            if (cursor.value['section_id'] == id){
+                section = cursor.value;
+            }
+            cursor.continue();
+        }
+    }
+    /* THIS SHOULD WORK?
+    var getSection = store.get(id);
+    getSection.onsuccess = function(e){
+        section = e.target.result;
+    }
+    */
+    transaction.oncomplete = function(){
+        var transactionD = db.transaction(['description'], 'readonly');
+        var storeD = transactionD.objectStore('description');
+        var indexD = storeD.index('section_id');
+        var keyRangeD = IDBKeyRange.only(id);
+        indexD.openCursor(keyRangeD).onsuccess = function(eD){
+            var cursor = eD.target.result;
+            if (cursor){
+                //if (cursor.value['section_id'] == id){
+                    descriptions.push(cursor.value);
+                //}
+                cursor.continue();
+            }
+        }
+        transactionD.oncomplete = function(){
             // Adding info to cart
             // Create containing div
             var section_data = document.createElement('div');
@@ -340,9 +539,6 @@ function add_section(id){
             section_data.setAttribute('id', id);
 
             // Populate div with content
-            var section = parseTextList(section_request_data)[0];
-
-            var descriptions = parseTextList(descriptions_data)[0];
 
             // Store to local storage
             if(typeof(Storage) !== "undefined"){
@@ -502,9 +698,8 @@ function add_section(id){
             }
             var old_hr = parseFloat(document.getElementById("course_hours").innerHTML);
             document.getElementById("course_hours").innerHTML = old_hr + total_hrs;
-			$('#sections_modal').modal('hide')
-        });
-    });
+        }
+    }
 }
 
 function re_add_section(id, data, desc){
@@ -678,7 +873,9 @@ function re_add_section(id, data, desc){
 
 function decrement_hrs(id){
     var total_hrs = 0;
-    var cal_events = $('#calendar').fullCalendar('clientEvents', idOrFilter = id);
+    var cal_events_sect = $('#calendar').fullCalendar('clientEvents', idOrFilter = id);
+    var cal_events_comp = $('#calendar').fullCalendar('clientEvents', idOrFilter = id + "_comp");
+    var cal_events = cal_events_sect.concat(cal_events_comp);
     for (var j = 0; j < cal_events.length; j++){
         var start = cal_events[j]['start'].toDate();
         var end = cal_events[j]['end'].toDate();
@@ -700,6 +897,7 @@ function remove_course(id){
     decrement_hrs(id);
     // Remove event from calendar
     $('#calendar').fullCalendar('removeEvents', idOrFilter = id);
+    $('#calendar').fullCalendar('removeEvents', idOrFilter = id + "_comp");
     // Remove event from cart
     var children = document.getElementById("cart").children;
     for (var i = 0; i < children.length; i++){
@@ -722,13 +920,6 @@ function remove_course(id){
 
     // Remove from CAESAR modal
     $("#CAESAR" + id).remove();
-    /*
-    var CAESAR_items = document.getElementById('CAESAR').children;
-    for (var i = 0; i < CAESAR_items.length; i++){
-        if (CAESAR_items[i].getAttribute('id') == "CAESAR" + id){
-            CAESAR_items[i].
-    }
-    */
 
     // If the event is unscheduled it, remove it from the unscheduled section
     var unscheduled_children = document.getElementById("unscheduled").children;
@@ -755,20 +946,168 @@ function back(input){
     }
 }
 
-$(document).ready(function(){
-    /*
-    // Check if indexedDB is supported
-    if ("indexedDB" in window){ idbSupported = true; }
-    // If it is, then:
-    if (idbSupported){
-        // Open database with version and db name specified
-        var openRequest = indexedDB.open("cache", 3);
+// IndexedDB update methods
+function update_terms(){
+    $.get("/static/data/all_terms.json", function(all_terms){
+        // Initialize objectStore
+        var store = db.transaction(["term"], "readwrite").objectStore("term");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing terms: ", e.target.error.name);
+        }
+        // begin adding
+        for (var i = 0; i < all_terms.length; i++){
+            var request = store.add(all_terms[i]);
+            request.onerror = function(e){
+                console.log("Error adding terms: ", e.target.error.name);
+            }
+        }
+    });
+}
 
-        // First time user:
+function update_schools(){
+    $.get("/static/data/all_schools.json", function(all_schools){
+        // Initialize objectStore
+        var store = db.transaction(["school"], "readwrite").objectStore("school");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing schools: ", e.target.error.name);
+        }
+        // begin adding
+        for (var i = 0; i < all_schools.length; i++){
+            var request = store.add(all_schools[i]);
+            request.onerror = function(e){
+                console.log("Error adding schools: ", e.target.error.name);
+            }
+        }
+    });
+}
+
+function update_subjects(){
+    $.get("/static/data/all_subjects.json", function(all_subjects){
+        // Initialize objectStore
+        var store = db.transaction(["subject"], "readwrite").objectStore("subject");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing subjects: ", e.target.error.name);
+        }
+        // begin adding
+        for (var i = 0; i < all_subjects.length; i++){
+            var request = store.add(all_subjects[i]);
+            request.onerror = function(e){
+                console.log("Error adding subjects: ", e.target.error.name);
+            }
+        }
+    });
+}
+
+function update_courses(){
+    $.get("/static/data/all_courses.json", function(all_courses){
+        // Initialize objectStore
+        var store = db.transaction(["course"], "readwrite").objectStore("course");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing courses: ", e.target.error.name);
+        }
+        // begin adding
+        for (var j = 0; j < all_courses.length; j++){
+            var request = store.add(all_courses[j]);
+            request.onerror = function(e){
+                console.log("Error adding courses: ", e.target.error.name);
+            }
+        }
+    });
+}
+
+function update_sections(){
+    $.get("/static/data/all_sections.json", function(all_sections){
+        // Initialize objectStore
+        var store = db.transaction(["section"], "readwrite").objectStore("section");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing sections: ", e.target.error.name);
+        }
+        // begin adding
+        for (var j = 0; j < all_sections.length; j++){
+            var request = store.add(all_sections[j]);
+            request.onerror = function(e){
+                console.log("Error adding sections: ", e.target.error.name);
+            }
+        }
+    });
+}
+
+function update_descriptions(){
+    $.get("/static/data/all_descriptions.json", function(all_descriptions){
+        // Initialize objectStore
+        var store = db.transaction(["description"], "readwrite").objectStore("description");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing descriptions: ", e.target.error.name);
+        }
+        // begin adding
+        for (var j = 0; j < all_descriptions.length; j++){
+            var request = store.add(all_descriptions[j]);
+            request.onerror = function(e){
+                console.log("Error adding descriptions: ", e.target.error.name);
+            }
+        }
+    });
+}
+
+function update_components(){
+    $.get("/static/data/all_components.json", function(all_components){
+        // Initialize objectStore
+        var store = db.transaction(["component"], "readwrite").objectStore("component");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing components: ", e.target.error.name);
+        }
+        // begin adding
+        for (var j = 0; j < all_components.length; j++){
+            var request = store.add(all_components[j]);
+            request.onerror = function(e){
+                console.log("Error adding components: ", e.target.error.name);
+            }
+        }
+    });
+}
+
+$(document).ready(function(){
+    set_current_term();
+
+    // Check if indexed db is supported
+    if ("indexedDB" in window){ idbSupported = true; }
+
+    if (idbSupported){
+        // Open database
+        var openRequest = indexedDB.open("cache", 1);
+        // On first visit
         openRequest.onupgradeneeded = function(e){
+            // If localstorage is supported
+            if(typeof(Storage) !== "undefined"){
+                // If the version number doesn't exist, initalize it
+                if (localStorage.getItem('indexedDBversion') == null){
+                    localStorage.setItem('indexedDBversion', 0);
+                }
+            }
             var thisdb = e.target.result;
-            // Adding data to user's indexedDB
-            // Terms
+            // Initialize objectStores
+            // Term
             if (!thisdb.objectStoreNames.contains("term")){
                 var objectStore = thisdb.createObjectStore("term", {keyPath:"term_id"});
                 // Add properties
@@ -777,57 +1116,119 @@ $(document).ready(function(){
                 objectStore.createIndex("start_date", "start_date", {unique:false});
                 objectStore.createIndex("end_date", "end_date", {unique:false});
             }
-            // Fetch data
-            $.get("/all_terms", function(all_terms_text){
-                all_terms = JSON.parse(all_terms_text);
-                all_terms_filtered = []
-                for (var i = 0; i < all_terms.length; i++){
-                    // Select only certain terms
-                    if (all_terms[i]['term_id'] == 4610){ all_terms_filtered.push(all_terms[i]); }
-                    else if (all_terms[i]['term_id'] == 4600){ all_terms_filtered.push(all_terms[i]); }
-                }
-                var store = thisdb.transaction(["term"], "readwrite").objectStore("term");
-                for (var i = 0; i < all_terms_filtered.length; i++){
-                    //TODO Check if term is already in db, if not:
-                        var request = store.add(all_terms_filtered[i], all_terms_filtered[i]['term_id']);
-                        request.onerror = function(e){
-                            console.log("Error", e.target.error.name);
-                        }
-                        request.onsuccess = function(e){}
-                }
-            });
-            // Schools
+            // School
             if (!thisdb.objectStoreNames.contains("school")){
                 var objectStore = thisdb.createObjectStore("school", {keyPath:"school_symbol"});
                 // Add properties
-                objctStore.createIndex("school_symbol", "school_symbol", {unique:true});
-                objctStore.createIndex("name", "name", {unique:false});
+                objectStore.createIndex("school_symbol", "school_symbol", {unique:true});
+                objectStore.createIndex("name", "name", {unique:false});
             }
-            // Fetch data
-            $.get("/all_schools", function(all_schools_text){
-                all_schools = JSON.parse(all_schools_text);
-                var store = thisdb.transaction(["school"], "readwrite").objectStore("school");
-                for (var i = 0; i < all_schools.length; i++){
-                    //TODO Check if school is already in db, if not:
-                        var request = store.add(all_schools[i], all_schools[i]['school_symbol']);
-                        request.onerror = function(e){
-                            console.log("Error", e.target.error.name);
-                        }
-                        request.onsucess = function(e){}
-                }
-            });
-            // Subjects
-            if (!thisdb.objectStoreNames.contains("subjects")){
+            // Subject
+            if (!thisdb.objectStoreNames.contains("subject")){
+                var objectStore = thisdb.createObjectStore("subject", {keyPath:"subject_symbol"});
+                // Add properties
+                objectStore.createIndex("subject_symbol", "subject_symbol", {unique:true});
+                objectStore.createIndex("symbol", "symbol", {unique:false});
+                objectStore.createIndex("name", "name", {unique:false});
+                objectStore.createIndex("term_id", "term_id", {unique:false});
+                objectStore.createIndex("school_symbol", "school_symbol", {unique:false});
+            }
+            // Course
+            if (!thisdb.objectStoreNames.contains("course")){
+                var objectStore = thisdb.createObjectStore("course", {keyPath:"course_symbol"});
+                // Add properties
+                objectStore.createIndex("course_symbol", "course_symbol", {unique:true});
+                objectStore.createIndex("course_name", "course_name", {unique:false});
+                objectStore.createIndex("subject_symbol", "subject_symbol", {unique:false});
+                objectStore.createIndex("term_id", "term_id", {unique:false});
+            }
+            // Section
+            if (!thisdb.objectStoreNames.contains("section")){
+                var objectStore = thisdb.createObjectStore("section", {keyPath:"section_id"});
+                // Add properties
+                objectStore.createIndex("section_id", "section_id", {unique:true});
+                objectStore.createIndex("catalog_num", "catalog_num", {unique:false});
+                objectStore.createIndex("title", "title", {unique:false});
+                objectStore.createIndex("dow", "dow", {unique:false});
+                objectStore.createIndex("meeting_days", "dow", {unique:false});
+                objectStore.createIndex("start_time", "start_time", {unique:false});
+                objectStore.createIndex("end_time", "end_time", {unique:false});
+                objectStore.createIndex("instructor", "instructor", {unique:false});
+                objectStore.createIndex("section", "section", {unique:false});
+                objectStore.createIndex("room", "room", {unique:false});
+                objectStore.createIndex("overview", "overview", {unique:false});
+                objectStore.createIndex("requirements", "requirements", {unique:false});
+                objectStore.createIndex("univ_num", "univ_num", {unique:false});
+                objectStore.createIndex("term_id", "term_id", {unique:false});
+                objectStore.createIndex("course_symbol", "course_symbol", {unique:false});
+            }
+            // Description
+            if (!thisdb.objectStoreNames.contains("description")){
+                var objectStore = thisdb.createObjectStore("description", {keyPath:"description_symbol"});
+                // Add properties
+                objectStore.createIndex("description_symbol", "description_symbol", {unique:true});
+                objectStore.createIndex("description_id", "description_id", {unique:false});
+                objectStore.createIndex("name", "name", {unique:false});
+                objectStore.createIndex("description", "description", {unique:false});
+                objectStore.createIndex("term_id", "term_id", {unique:false});
+                objectStore.createIndex("section_id", "section_id", {unique:false});
+            }
+            // Component
+            if (!thisdb.objectStoreNames.contains("component")){
+                var objectStore = thisdb.createObjectStore("component", {keyPath:"component_symbol"});
+                // Add properties
+                objectStore.createIndex("component_symbol", "component_symbol", {unique:true});
+                objectStore.createIndex("component_id", "component_id", {unique:false});
+                objectStore.createIndex("component", "component", {unique:false});
+                objectStore.createIndex("dow", "dow", {unique:false});
+                objectStore.createIndex("meeting_days", "meeting_days", {unique:false});
+                objectStore.createIndex("start_time", "start_time", {unique:false});
+                objectStore.createIndex("end_time", "end_time", {unique:false});
+                objectStore.createIndex("component_section", "component_section", {unique:false});
+                objectStore.createIndex("room", "room", {unique:false});
+                objectStore.createIndex("term_id", "term_id", {unique:false});
+                objectStore.createIndex("section_id", "section_id", {unique:false});
             }
         }
-        openRequest.onsuccess = function(e){}
+        // On every visit
+        openRequest.onsuccess = function(e){
+            db = e.target.result;
+            // If localstorage is supported
+            if(typeof(Storage) !== "undefined"){
+                // Compare version numbers to see if updates are needed
+                $.get("/indexedDBversion", function(version_num){
+                    // If updates are needed, run update functions
+                    if (parseInt(localStorage.getItem('indexedDBversion')) < parseInt(version_num)){
+                        update_terms();
+                        update_schools();
+                        update_subjects();
+                        update_courses();
+                        update_sections();
+                        update_descriptions();
+                        update_components();
+                        // update version number to new version
+                        localStorage.setItem('indexedDBversion', version_num);
+                    }
+                });
+            }
+
+        }
     }
-    */
+
+    $('#sections_modal').draggable({handle:'.modal-header'});
+    // Make sure that for sections with components, you are forced to select a component
+    $('#sections_modal').on('hidden.bs.modal', function(){
+        if (!comp_selected){
+            window.alert("You must select a component.");
+            $('#sections_modal').modal('show');
+        }
+    })
 
     // Load calendar
     $('#calendar').fullCalendar({
         googleCalendarApiKey: 'AIzaSyDEbFn8eSO-K5iIv3LerSaHyonOC7plNcE',
         defaultView: 'agendaWeek',
+        editable: true,
         weekends: false,
         header: false,
         columnFormat: 'ddd',
@@ -835,22 +1236,31 @@ $(document).ready(function(){
         minTime: "07:00:00",
         maxTime: "22:00:00",
         allDaySlot: false,
-        events: {
-            googleCalendarId: '57bcm4ch79o7820fm5d66e09j8@group.calendar.google.com',
-        },
         eventColor: '#520063',
         eventRender: function(event, element){
             element[0].setAttribute('data-toggle', 'popover');
             element[0].setAttribute('title', "<b>" + event.title + "</b>");
+            var is_comp = false;
+            if (event.id.substring(event.id.length - 5) == "_comp"){
+                is_comp = true;
+            }
             if (event.instructor == undefined){
-                if (event.room == ""){
+                if (event.room == "" && is_comp){
+                    element[0].setAttribute('data-content', "Section " + event.section + "<br>" + event.component);
+                } else if (event.room == "") {
                     element[0].setAttribute('data-content', "Section " + event.section + "<br>" + event.component + "<br><a onclick='remove_course(" + event.id + ")' href='javascript:;'>Remove</a>");
+                } else if (is_comp){
+                    element[0].setAttribute('data-content', "Section " + event.section + "<br>" + event.room + "<br>" + event.component);
                 } else{
                     element[0].setAttribute('data-content', "Section " + event.section + "<br>" + event.room + "<br>" + event.component + "<br><a onclick='remove_course(" + event.id + ")' href='javascript:;'>Remove</a>");
                 }
             } else {
-                if (event.room == ""){
+                if (event.room == "" && is_comp){
+                    element[0].setAttribute('data-content', "Section " + event.section + "<br>" + event.instructor);
+                } else if (event.room == ""){
                     element[0].setAttribute('data-content', "Section " + event.section + "<br>" + event.instructor + "<br><a onclick='remove_course(" + event.id + ")' href='javascript:;'>Remove</a>");
+                } else if (is_comp){
+                    element[0].setAttribute('data-content', "Section " + event.section + "<br>" + event.room + "<br>" + event.instructor);
                 } else{
                     element[0].setAttribute('data-content', "Section " + event.section + "<br>" + event.room + "<br>" + event.instructor + "<br><a onclick='remove_course(" + event.id + ")' href='javascript:;'>Remove</a>");
                 }
@@ -884,7 +1294,7 @@ $(document).ready(function(){
         while (i < localStorage.length){
             if (localStorage.key(i).split("_")[0] == "component"){
                 dataobj = JSON.parse(localStorage.getItem(localStorage.key(i)));
-                re_add_component(dataobj['full_name'], dataobj['id'], dataobj['data']);
+                re_add_component(dataobj['component_symbol'], dataobj['id'], dataobj['data']);
             } else if (localStorage.key(i).split("_")[0] == "section"){
                 dataobj = JSON.parse(localStorage.getItem(localStorage.key(i)));
                 re_add_section(dataobj['id'], dataobj['data'], dataobj['desc']);
@@ -897,73 +1307,31 @@ $(document).ready(function(){
         $('#announcement_body').append("\nYour browser does not support local storage. This means you'll lose your schedule when you close Serif.");
     }
 
-    // Load search box
-    $.get("https://s3.amazonaws.com/serif-assets/all_sections.json", function(all_sections_data){
-        // get the information
-        var search_list = parseTextList(all_sections_data);
-        // get rid of Loading message
-        $("#empty_message").empty();
-
-        $("#autocomplete").autocomplete({
-            minLength: 3,
-            source: function(request, response){
-                var results = $.ui.autocomplete.filter(search_list, request.term);
-                if (request.term.length == 0){
-                    $("#empty_message").empty();
-                }
-                if (!results.length){
-                    $("#empty_message").text("No results found");
-                } else{
-                    $("#empty_message").empty();
-                }
-                response(results);
-            },
-            autoFocus: true,
-            select: function(event, ui){
-                add_section_search(ui.item.id);
-                $.get("/components/" + ui.item.id, function(components_data){
-                    if (components_data != "{}"){
-                        $('#sections_modal').modal('show')
+    // Initialize the search
+    $.get('/static/data/current_term', function(current_term_str){
+        $.get("/static/data/search_data_" + current_term_str + ".json", function(search_list){
+            // get rid of Loading message
+            $("#empty_message").empty();
+            $("#autocomplete").autocomplete({
+                minLength: 3,
+                source: function(request, response){
+                    var results = $.ui.autocomplete.filter(search_list, request.term);
+                    if (request.term.length == 0){
+                        $("#empty_message").empty();
                     }
-                });
-            }
-        }).autocomplete("instance")._renderItem = function(ul, item){
-            return $("<li>").append("<a>" + item.label + "<br>" + item.desc + " " + item.instructor + "</a>").appendTo(ul);
-        };
+                    if (!results.length){
+                        $("#empty_message").text("No results found");
+                    } else{
+                        $("#empty_message").empty();
+                    }
+                    response(results);
+                },
+                autoFocus: true,
+                select: function(event, ui){
+                    $('#sections_modal').modal('show')
+                    show_sections(ui.item.id);
+                }
+            });
+        });
     });
-
-
-    // Testing
-    /*
-    $.get("/all_terms", function(all_terms_text){
-        all_terms = JSON.parse(all_terms_text);
-
-        // Testing Terms
-        top_term_ids = [4610, 4600]
-
-        for (var i = 0; i < top_term_ids.length; i++){
-            term_id = top_term_ids[i];
-            $.get("/all_subjects/" + term_id, function(all_subjects_text){
-                all_subjects = JSON.parse(all_subjects_text);
-            });
-
-            $.get("/all_courses/" + term_id, function(all_courses_text){
-                all_courses= JSON.parse(all_courses_text);
-            });
-
-            $.get("/all_sections/" + term_id, function(all_sections_text){
-                all_sections = JSON.parse(all_sections_text);
-            });
-
-            $.get("/all_components/" + term_id, function(all_components_text){
-                all_components = JSON.parse(all_components_text);
-            });
-
-            $.get("/all_descriptions/" + term_id, function(all_descriptions_text){
-                all_descriptions = JSON.parse(all_descriptions_text);
-            });
-        }
-    });
-    */
-
 });

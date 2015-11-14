@@ -3,10 +3,6 @@ import serif as s
 
 term_id = s.Term.query.filter_by(term_id = sys.argv[1]).first().term_id
 
-s.update_terms()
-print "Updated Terms"
-s.update_schools()
-print "Updated Schools"
 s.update_subjects(term_id)
 print "Updated Subjects"
 s.update_courses(term_id)

@@ -121,6 +121,7 @@ class Section(db.Model):
     catalog_num = db.Column(db.String())
     title = db.Column(db.String())
     dow = db.Column(db.String())
+    meeting_days = db.Column(db.String())
     start_time = db.Column(db.String())
     end_time = db.Column(db.String())
     instructor = db.Column(db.String())
@@ -136,11 +137,12 @@ class Section(db.Model):
     descriptions = db.relationship('Description', backref = 'section', lazy = 'dynamic')
     components = db.relationship('Component', backref = 'section', lazy = 'dynamic')
     
-    def __init__(self, section_id, catalog_num, title, dow, start_time, end_time, instructor, section, room, overview, requirements, univ_num, descriptions, components):
+    def __init__(self, section_id, catalog_num, title, dow, meeting_days, start_time, end_time, instructor, section, room, overview, requirements, univ_num, descriptions, components):
         self.section_id = section_id
         self.catalog_num = catalog_num
         self.title = title
         self.dow = dow
+        self.meeting_days = meeting_days
         self.start_time = start_time
         self.end_time = end_time
         self.instructor = instructor
@@ -179,6 +181,7 @@ class Component(db.Model):
     component_id = db.Column(db.Integer)
     component = db.Column(db.String())
     dow = db.Column(db.String())
+    meeting_days = db.Column(db.String())
     start_time = db.Column(db.String())
     end_time = db.Column(db.String())
     component_section = db.Column(db.String())
@@ -187,11 +190,12 @@ class Component(db.Model):
     term_id = db.Column(db.Integer, db.ForeignKey('term.term_id'))
     section_id = db.Column(db.Integer, db.ForeignKey('section.section_id'))
 
-    def __init__(self, component_symbol, component_id, component, dow, start_time, end_time, component_section, room):
+    def __init__(self, component_symbol, component_id, component, dow, meeting_days, start_time, end_time, component_section, room):
         self.component_symbol = component_symbol
         self.component_id = component_id
         self.component = component
         self.dow = dow
+        self.meeting_days = meeting_days
         self.start_time = start_time
         self.end_time = end_time
         self.component_section = component_section
@@ -289,6 +293,7 @@ def update_sections(term_id):
                                   new_section['catalog_num'],
                                   new_section['title'],
                                   str(convertDaysToDOW(new_section['meeting_days'])),
+                                  new_section['meeting_days'],
                                   str(new_section['start_time']),
                                   str(new_section['end_time']),
                                   str(new_section['instructor']['name']),
@@ -351,6 +356,7 @@ def update_components(term_id):
                      'id':int(section['id']),
                      'component':str(comp['component']),
                      'dow':str(convertDaysToDOW(comp['meeting_days'])),
+                     'meeting_days':str(comp['meeting_days']),
                      'start_time':str(comp['start_time']),
                      'end_time':str(comp['end_time']),
                      'section':str(comp['section']),
@@ -360,7 +366,7 @@ def update_components(term_id):
 
     counter = 0
     for new_component in new_components:
-        new_comp_obj = Component(new_component['symbol'], new_component['id'], new_component['component'], new_component['dow'], new_component['start_time'], new_component['end_time'], new_component['section'], new_component['room'])
+        new_comp_obj = Component(new_component['symbol'], new_component['id'], new_component['component'], new_component['dow'], new_component['meeting_days'], new_component['start_time'], new_component['end_time'], new_component['section'], new_component['room'])
         try:
             Term.query.filter_by(term_id = term_id).first().components.append(new_comp_obj)
             Section.query.filter_by(section_id = new_component['id']).first().components.append(new_comp_obj)
@@ -372,40 +378,47 @@ def update_components(term_id):
     print "{0} components added.".format(counter)
 
 
-@app.route('/all_terms')
+# Serve data
+@app.route('/current_term')
+def current_term():
+    term_id = Term.query.order_by(desc(Term.term_id))[0].term_id
+    return str(term_id)
+
+@app.route('/all_terms/')
 def all_terms():
     terms = Term.query.all()
     terms_json = [{'term_id':x.term_id, 'name':x.name, 'start_date':x.start_date, 'end_date':x.end_date} for x in terms]
     return json.dumps(terms_json)
 
-@app.route('/all_schools')
+@app.route('/all_schools/')
 def all_schools():
     schools = School.query.all()
     schools_dict = [{'school_symbol':x.school_symbol, 'name':x.name} for x in schools]
     return json.dumps(schools_dict)
 
-@app.route('/all_subjects/<term_id>')
-def all_subjects(term_id):
-    subjects = Subject.query.filter_by(term_id = term_id)
-    subjects_dict = [{'symbol':x.subject_symbol, 'symbol':x.symbol, 'name':x.name, 'term_id':x.term_id, 'school_symbol':x.school_symbol} for x in subjects]
+@app.route('/all_subjects/')
+def all_subjects():
+    subjects = Subject.query.all()
+    subjects_dict = [{'subject_symbol':x.subject_symbol, 'symbol':x.symbol, 'name':x.name, 'term_id':x.term_id, 'school_symbol':x.school_symbol} for x in subjects]
     return json.dumps(subjects_dict)
 
-@app.route('/all_courses/<term_id>')
-def all_courses(term_id):
-    courses = Course.query.filter_by(term_id = term_id)
+@app.route('/all_courses/')
+def all_courses():
+    courses = Course.query.all()
     courses_dict = [{'course_symbol':x.course_symbol, 'course_name':x.course_name, 'subject_symbol':x.subject_symbol, 'term_id':x.term_id} for x in courses]
     return json.dumps(courses_dict)
 
-@app.route('/all_sections/<term_id>')
-def all_sections(term_id):
+@app.route('/all_sections/')
+def all_sections():
     sections_list = []
-    sections = Section.query.filter_by(term_id = term_id)
+    sections = Section.query.all()
     for section in sections:
         sections_list.append(
                                 {'section_id':section.section_id,
                                  'catalog_num':section.catalog_num,
                                  'title':section.title,
                                  'dow':section.dow,
+                                 'meeting_days':section.meeting_days,
                                  'start_time':section.start_time,
                                  'end_time':section.end_time,
                                  'instructor':section.instructor,
@@ -415,37 +428,55 @@ def all_sections(term_id):
                                  'requirements':section.requirements,
                                  'univ_num':section.univ_num,
                                  'term_id':section.term_id,
-                                 'course_symbol':section.course_symbol
+                                 'course_symbol':section.course_symbol,
+                                 'course':section.course.course_name
                                 }
                             )
     return json.dumps(sections_list)
 
-@app.route('/all_components/<term_id>')
-def all_components(term_id):
-    components = Component.query.filter_by(term_id = term_id)
+@app.route('/all_components/')
+def all_components():
+    components = Component.query.all()
     components_dict = [{'component_symbol':x.component_symbol,
                         'component_id':x.component_id,
                         'component':x.component,
                         'dow':x.dow,
+                        'meeting_days':x.meeting_days,
                         'start_time':x.start_time,
                         'end_time':x.end_time,
                         'component_section':x.component_section,
                         'room':x.room,
                         'term_id':x.term_id,
-                        'section_id':x.section_id} for x in components]
+                        'section_id':x.section_id,
+                        'course':x.section.course.course_name} for x in components]
     return json.dumps(components_dict)
 
-@app.route('/all_descriptions/<term_id>')
-def all_descriptions(term_id):
-    descriptions = Description.query.filter_by(term_id = term_id)
-    descriptions_dict = [{'description_id':x.description_id,
+@app.route('/all_descriptions/')
+def all_descriptions():
+    descriptions = Description.query.all()
+    descriptions_dict = [{'description_symbol':x.description_symbol,
+                          'description_id':x.description_id,
                           'name':x.name,
                           'description':x.description,
                           'term_id':x.term_id,
                           'section_id':x.section_id} for x in descriptions]
     return json.dumps(descriptions_dict)
 
+@app.route('/search_data/<int:term_id>')
+def search_data(term_id):
+    courses_list = []
+    courses = Course.query.filter_by(term_id = term_id).all()
+    for course in courses:
+        courses_list.append({'value':course.course_name,
+                            'label':course.course_name,
+                            'id':course.course_symbol});
+    return json.dumps(courses_list)
 
+@app.route('/indexedDBversion')
+def indexedDBversion():
+    return "1"
+
+# Serve pages
 @app.route('/')
 def index():
     term_name = Term.query.order_by(desc(Term.term_id))[0].name
@@ -455,7 +486,6 @@ def index():
 @app.route('/about')
 def about():
     return render_template('about.html')
-
 
 @app.route('/contact')
 def contact():
@@ -473,6 +503,9 @@ def login():
 def terms_of_service():
     return render_template('terms_of_service.html')
 
+
+# Old version queries
+"""
 @app.route('/subjects/<school_symbol>')
 def subjects(school_symbol):
     term_id = Term.query.order_by(desc(Term.term_id))[0].term_id
@@ -484,14 +517,14 @@ def subjects(school_symbol):
 def courses(subject_symbol):
     term_id = Term.query.order_by(desc(Term.term_id))[0].term_id
     courses = Course.query.filter_by(term_id = term_id, subject_symbol = subject_symbol).all()
-    courses_json = [{'name':x.course_name,
-                     'symbol':x.course_symbol,
-                     'subject':x.subject_symbol} for x in courses]
+    courses_json = [{'course_name':x.course_name,
+                     'course_symbol':x.course_symbol,
+                     'subject_symbol':x.subject_symbol} for x in courses]
     return json.dumps(courses_json)
 
-@app.route('/sections/<course_name>')
-def sections(course_name):
-    sections = Section.query.filter_by(course_symbol = course_name).all()
+@app.route('/sections/<course_symbol>')
+def sections(course_symbol):
+    sections = Section.query.filter_by(course_symbol = course_symbol).all()
     sections_json = [
                         {'id':x.section_id,
                          'catalog_num':x.catalog_num,
@@ -562,9 +595,8 @@ def component(full_name, section_id):
             comp_dict['course'] = section.course.course_name
             return json.dumps(comp_dict)
 
-"""
-@app.route('/all_sections')
-def all_sections():
+@app.route('/all_sections_temp')
+def all_sections_temp():
     term_id = Term.query.order_by(desc(Term.term_id))[0].term_id
     sections_list = []
     sections = Section.query.filter_by(term_id = term_id).all()
@@ -572,11 +604,9 @@ def all_sections():
         # Account for unscheduled courses
         meeting_str = ''
         if section.dow != '[]': meeting_str = convertDOWToDays(section.dow)
-
         section_time  = ""
         if section.start_time != 'None':
             section_time = section.start_time + "-" + section.end_time
-
         sections_list.append(
                                 {'value':section.title,
                                  'desc':meeting_str + " " + section_time,

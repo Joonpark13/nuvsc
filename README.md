@@ -8,22 +8,20 @@ Serif is not intended to replace CAESAR - the enrollment of courses still must b
 
 If there is a feature that you would like to see added to Serif, or a functionality that you wish were different somehow, please send a note through the feedback form. This will help Serif become a better service for the students.
 
-The application is written in python (serverside) and javascript (clientside). The <a href='http://flask.pocoo.org/'>flask</a> api is used alongside <a href='http://getbootstrap.com/'>bootstrap</a> among other common packages such as jQuery UI. The data is taken from the <a href='http://developer.asg.northwestern.edu/'>Northwestern Course Data API</a> and is saved to a postgresql database.
+The application is written in python (serverside) and javascript (clientside). The <a href='http://flask.pocoo.org/'>flask</a> api is used alongside <a href='http://getbootstrap.com/'>bootstrap</a> among other common packages such as jQuery UI. The data is taken from the <a href='http://developer.asg.northwestern.edu/'>Northwestern Course Data API</a> and is saved to a postgresql database on the local development machine, which then generates static json files for upload to Amazon S3. Through AJAX requests, the data is downloaded and saved clientside using indexedDB for fast access and no server load.
 
 The application takes advantage of localStorage in order to save user schedules locally.
 
-Instructions
-------------------------------
-To run a local version of Serif, clone this repository. The python dependencies you'll need are: flask, <a href='https://github.com/northwesternapis/python-client'>nuapiclient</a>, and sqlite3. They can all be installed through pip. The clientside dependencies are: <a href='http://fullcalendar.io/'>fullcalendar</a>, jQuery UI, jQuery, and bootstrap. I recommend installing <a href='https://virtualenv.pypa.io/en/latest/'>virtualenv</a> and installing your pip dependencies that way.
-
 Latest Version
 ------------------------------
-V1.3
+V1.5
 CHANGELOG:
 <ul>
-    <li>Added "I'm ready to register" functionality</li>
-    <li>Changed primary key of components so that none were missing</li>
-    <li>Added scroll functionality to browse</li>
+    <li>Added hover and drag functionality for section and component lists</li>
+    <li>Fixed bug where sections without components would force you to choose a component</li>
+    <li>Implemented indexeddb for clientside storage</li>
+    <li>Made indexedDB cursors faster by specifying keyRanges</li>
+    <li>Made every ajax reference a static file</li>
 </ul>
 
 Author and Contact
