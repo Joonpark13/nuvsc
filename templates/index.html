@@ -5,9 +5,7 @@
         <div class="row">
             <div class="col-xs-12 col-md-2">
 
-                <div id="current_term">
-                    <h4>Displaying Courses For: <b>{{term}}</b></h4>
-                </div>
+                <div id="current_term"></div>
 
                 <ul class="nav nav-tabs" role="tablist">
                     <li role="presentation" class="active"><a href="#search_tab" aria-controls="search" role="tab" data-toggle="tab">Search</a></li>
@@ -69,12 +67,21 @@
             </div><!--column-->
 
             <div class="col-xs-12 col-md-7">
+
                 <div id='announcement_panel' class='panel panel-default'>
                     <div id='announcement_body' class='panel-body'>
+                        Serif just received an update just in time for registration! You can now hover over courses before selecting them, and search has been streamlined. We're constantly looking to improve the user experience and more features will be added by the time Spring registration rolls around!
                     </div>
                 </div>
+
                 <div id="calendar"></div>
-                <div id="unscheduled"><h4>Unscheduled Courses</h4></div>
+
+                <div class="panel panel-default">
+                    <div class='panel-heading'>
+                        <h4 class='panel-title'>Unscheduled Courses</h4>
+                    </div>
+                    <div class="panel-body" id="unscheduled"></div>
+                </div>
             </div>
 
             <div class="col-xs-12 col-md-3">

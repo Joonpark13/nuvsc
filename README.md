@@ -22,6 +22,7 @@ CHANGELOG:
     <li>Implemented indexeddb for clientside storage</li>
     <li>Made indexedDB cursors faster by specifying keyRanges</li>
     <li>Made every ajax reference a static file</li>
+    <li>Works for indexedDB and no indexedDB</li>
 </ul>
 
 Author and Contact

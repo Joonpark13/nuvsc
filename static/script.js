@@ -48,8 +48,229 @@ function insertAfter(newNode, referenceNode){
 }
 
 function set_current_term(){
-    $.get('/current_term', function(termid){
-        current_term = parseInt(termid);
+    $.get('/static/data/current_term.json', function(termobj){
+        current_term = termobj['term_id'];
+        var currentTermH4 = document.createElement('h4');
+        currentTermH4.innerHTML = "Displaying courses for: <b>" + termobj['name'] + "</b>";
+        $('#current_term').append(currentTermH4);
+    });
+}
+
+// IndexedDB update methods
+function update_terms(){
+    $.get("/static/data/all_terms.json", function(all_terms){
+        // Put a warning message up
+        var alertDiv = $(document.createElement('div'));
+        alertDiv.attr('class', 'alert alert-warning');
+        alertDiv.attr('id', 'update_terms_alert');
+        alertDiv.attr('role', 'alert');
+        alertDiv.text('Updating Term data, please wait...');
+        $("#calendar").before(alertDiv);
+        // Initialize objectStore
+        var transaction = db.transaction(["term"], "readwrite");
+        var store = transaction.objectStore("term");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing terms: ", e.target.error.name);
+        }
+        // begin adding
+        for (var i = 0; i < all_terms.length; i++){
+            var request = store.add(all_terms[i]);
+            request.onerror = function(e){
+                console.log("Error adding terms: ", e.target.error.name);
+            }
+        }
+        transaction.oncomplete = function(){
+            $('#update_terms_alert').remove();
+        }
+    });
+}
+
+function update_schools(){
+    $.get("/static/data/all_schools.json", function(all_schools){
+        // Put a warning message up
+        var alertDiv = $(document.createElement('div'));
+        alertDiv.attr('class', 'alert alert-warning');
+        alertDiv.attr('id', 'update_schools_alert');
+        alertDiv.attr('role', 'alert');
+        alertDiv.text('Updating School data, please wait...');
+        $("#calendar").before(alertDiv);
+        // Initialize objectStore
+        var transaction = db.transaction(["school"], "readwrite");
+        var store = transaction.objectStore("school");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing schools: ", e.target.error.name);
+        }
+        // begin adding
+        for (var i = 0; i < all_schools.length; i++){
+            var request = store.add(all_schools[i]);
+            request.onerror = function(e){
+                console.log("Error adding schools: ", e.target.error.name);
+            }
+        }
+        transaction.oncomplete = function(){
+            $('#update_schools_alert').remove();
+        }
+    });
+}
+
+function update_subjects(){
+    $.get("/static/data/all_subjects.json", function(all_subjects){
+        // Put a warning message up
+        var alertDiv = $(document.createElement('div'));
+        alertDiv.attr('class', 'alert alert-warning');
+        alertDiv.attr('id', 'update_subjects_alert');
+        alertDiv.attr('role', 'alert');
+        alertDiv.text('Updating Subject data, please wait...');
+        $("#calendar").before(alertDiv);
+        // Initialize objectStore
+        var transaction = db.transaction(["subject"], "readwrite");
+        var store = transaction.objectStore("subject");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing subjects: ", e.target.error.name);
+        }
+        // begin adding
+        for (var i = 0; i < all_subjects.length; i++){
+            var request = store.add(all_subjects[i]);
+            request.onerror = function(e){
+                console.log("Error adding subjects: ", e.target.error.name);
+            }
+        }
+        transaction.oncomplete = function(){
+            $('#update_subjects_alert').remove();
+        }
+    });
+}
+
+function update_courses(){
+    $.get("/static/data/all_courses.json", function(all_courses){
+        // Put a warning message up
+        var alertDiv = $(document.createElement('div'));
+        alertDiv.attr('class', 'alert alert-warning');
+        alertDiv.attr('id', 'update_course_alert');
+        alertDiv.attr('role', 'alert');
+        alertDiv.text('Updating Course data, please wait...');
+        $("#calendar").before(alertDiv);
+        // Initialize objectStore
+        var transaction = db.transaction(["course"], "readwrite");
+        var store = transaction.objectStore("course");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing courses: ", e.target.error.name);
+        }
+        // begin adding
+        for (var j = 0; j < all_courses.length; j++){
+            var request = store.add(all_courses[j]);
+            request.onerror = function(e){
+                console.log("Error adding courses: ", e.target.error.name);
+            }
+        }
+        transaction.oncomplete = function(){
+            $('#update_course_alert').remove();
+        }
+    });
+}
+
+function update_sections(){
+    $.get("/static/data/all_sections.json", function(all_sections){
+        // Put a warning message up
+        var alertDiv = $(document.createElement('div'));
+        alertDiv.attr('class', 'alert alert-warning');
+        alertDiv.attr('id', 'update_section_alert');
+        alertDiv.attr('role', 'alert');
+        alertDiv.text('Updating Section data, please wait...');
+        $("#calendar").before(alertDiv);
+        // Initialize objectStore
+        var transaction = db.transaction(["section"], "readwrite");
+        var store = transaction.objectStore("section");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing sections: ", e.target.error.name);
+        }
+        // begin adding
+        for (var j = 0; j < all_sections.length; j++){
+            var request = store.add(all_sections[j]);
+            request.onerror = function(e){
+                console.log("Error adding sections: ", e.target.error.name);
+            }
+        }
+        transaction.oncomplete = function(){
+            $('#update_section_alert').remove();
+        }
+    });
+}
+
+function update_descriptions(){
+    $.get("/static/data/all_descriptions.json", function(all_descriptions){
+        // Put a warning message up
+        var alertDiv = $(document.createElement('div'));
+        alertDiv.attr('class', 'alert alert-warning');
+        alertDiv.attr('id', 'update_description_alert');
+        alertDiv.attr('role', 'alert');
+        alertDiv.text('Updating Description data, please wait...');
+        $("#calendar").before(alertDiv);
+        // Initialize objectStore
+        var transaction = db.transaction(["description"], "readwrite");
+        var store = transaction.objectStore("description");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing descriptions: ", e.target.error.name);
+        }
+        // begin adding
+        for (var j = 0; j < all_descriptions.length; j++){
+            var request = store.add(all_descriptions[j]);
+            request.onerror = function(e){
+                console.log("Error adding descriptions: ", e.target.error.name);
+            }
+        }
+        transaction.oncomplete = function(){
+            $('#update_description_alert').remove();
+        }
+    });
+}
+
+function update_components(){
+    $.get("/static/data/all_components.json", function(all_components){
+        // Put a warning message up
+        var alertDiv = $(document.createElement('div'));
+        alertDiv.attr('class', 'alert alert-warning');
+        alertDiv.attr('id', 'update_component_alert');
+        alertDiv.attr('role', 'alert');
+        alertDiv.text('Updating Component data, please wait...');
+        $("#calendar").before(alertDiv);
+        // Initialize objectStore
+        var transaction = db.transaction(["component"], "readwrite");
+        var store = transaction.objectStore("component");
+        // delete old data
+        var clearRequest = store.clear();
+        // Catch possible error
+        clearRequest.onerror = function(e){
+            console.log("Error clearing components: ", e.target.error.name);
+        }
+        // begin adding
+        for (var j = 0; j < all_components.length; j++){
+            var request = store.add(all_components[j]);
+            request.onerror = function(e){
+                console.log("Error adding components: ", e.target.error.name);
+            }
+        }
+        transaction.oncomplete = function(){
+            $('#update_component_alert').remove();
+        }
     });
 }
 
@@ -66,38 +287,63 @@ $(document).on('click', '.school_button', function(){
     document.getElementById("visual_course_finder").appendChild(back);
     $('#visual_course_finder').append("<br class='subject_box'>");
 
-    var transaction = db.transaction(["subject"], "readonly");
-    var store = transaction.objectStore("subject");
-    var index = store.index("school_symbol");
-    var keyRange = IDBKeyRange.only(current_school);
-    index.openCursor(keyRange).onsuccess = function(e){
-        var cursor = e.target.result;
-        if (cursor){
-            if (cursor.value['term_id'] == current_term){
-                // Generate subject links
+    if (idbSupported){
+        var transaction = db.transaction(["subject"], "readonly");
+        var store = transaction.objectStore("subject");
+        var index = store.index("school_symbol");
+        var keyRange = IDBKeyRange.only(current_school);
+        index.openCursor(keyRange).onsuccess = function(e){
+            var cursor = e.target.result;
+            if (cursor){
+                if (cursor.value['term_id'] == current_term){
+                    // Generate subject links
+                    var subject_box = document.createElement('div');
+                    subject_box.setAttribute('class', 'subject_box');
+                    subject_box.setAttribute('id', cursor.value['subject_symbol']);
+                    subject_box.innerHTML = "<button type='button' class='subject_btn btn btn-primary btn-xs btn-block'>" + cursor.value['name'] + "</button>";
+                    document.getElementById("visual_course_finder").appendChild(subject_box);
+                }
+                cursor.continue();
+            }
+        }
+
+        transaction.oncomplete = function(){
+            var btt_div = document.createElement('div');
+            btt_div.setAttribute('class', 'back_to_top subject_box');
+            // Back to top button
+            var back_to_top = document.createElement('a');
+            back_to_top.setAttribute('class', 'btn btn-default btn-xs');
+            back_to_top.setAttribute('href', '#btt');
+            back_to_top.setAttribute('role', 'button');
+            back_to_top.innerHTML = "Back to top";
+            
+            btt_div.appendChild(back_to_top);
+            document.getElementById("visual_course_finder").appendChild(btt_div);
+        };
+    } else{
+        $.get("/subjects/" + current_school, function(subjects){
+            // Generate subject links
+            var subjects_list = JSON.parse(subjects);
+            for (var i = 0; i < subjects_list.length; i++){
                 var subject_box = document.createElement('div');
                 subject_box.setAttribute('class', 'subject_box');
-                subject_box.setAttribute('id', cursor.value['subject_symbol']);
-                subject_box.innerHTML = "<button type='button' class='subject_btn btn btn-primary btn-xs btn-block'>" + cursor.value['name'] + "</button>";
+                subject_box.setAttribute('id', subjects_list[i]['subject_symbol']);
+                subject_box.innerHTML = "<button type='button' class='subject_btn btn btn-primary btn-xs btn-block'>" + subjects_list[i]['name'] + "</button>";
                 document.getElementById("visual_course_finder").appendChild(subject_box);
             }
-            cursor.continue();
-        }
+            var btt_div = document.createElement('div');
+            btt_div.setAttribute('class', 'back_to_top subject_box');
+            // Back to top button
+            var back_to_top = document.createElement('a');
+            back_to_top.setAttribute('class', 'btn btn-default btn-xs');
+            back_to_top.setAttribute('href', '#');
+            back_to_top.setAttribute('role', 'button');
+            back_to_top.innerHTML = "Back to top";
+            
+            btt_div.appendChild(back_to_top);
+            document.getElementById("visual_course_finder").appendChild(btt_div);
+        });
     }
-
-    transaction.oncomplete = function(){
-        var btt_div = document.createElement('div');
-        btt_div.setAttribute('class', 'back_to_top subject_box');
-        // Back to top button
-        var back_to_top = document.createElement('a');
-        back_to_top.setAttribute('class', 'btn btn-default btn-xs');
-        back_to_top.setAttribute('href', '#btt');
-        back_to_top.setAttribute('role', 'button');
-        back_to_top.innerHTML = "Back to top";
-        
-        btt_div.appendChild(back_to_top);
-        document.getElementById("visual_course_finder").appendChild(btt_div);
-    };
 });
 
 // Show Courses
@@ -118,37 +364,73 @@ $(document).on('click', '.subject_btn', function(){
             subject_box_obj = subjects[j];
         }
     }
-    // Make a ul element
-    var subject_ul = document.createElement('ul');
-    subject_ul.setAttribute('id', this.parentElement.getAttribute('id') + "_ul");
-    // Put the ul element inside of subject_box
-    subject_box_obj.appendChild(subject_ul);
-    // For every course in subject
-    var transaction = db.transaction(["course"], "readonly");
-    var store = transaction.objectStore("course");
-    var index = store.index("subject_symbol");
-    var keyRange = IDBKeyRange.only(current_subject[current_subject.length - 1]);
-    index.openCursor(keyRange).onsuccess = function(e){
-        var cursor = e.target.result;
-        if (cursor){
-            var course = cursor.value;
-            // Make course link
-            var course_link = document.createElement('a');
-            course_link.setAttribute('id', course['course_symbol']);
-            course_link.setAttribute('class', 'course_link');
-            course_link.setAttribute('onclick', "show_sections(this.id)");
-            course_link.setAttribute('data-toggle', 'modal');
-            course_link.setAttribute('data-target', '#sections_modal');
-            course_link.setAttribute('href', 'javascript:;');
-            course_link.innerHTML = course['course_name'];
-            // Put link inside li element
-            var course_li = document.createElement('li');
-            course_li.appendChild(course_link);
-            // Put li element inside ul
-            subject_ul.appendChild(course_li);
-            cursor.continue();
+    if (idbSupported){
+        // Make a ul element
+        var subject_ul = document.createElement('ul');
+        subject_ul.setAttribute('id', this.parentElement.getAttribute('id') + "_ul");
+        // Put the ul element inside of subject_box
+        subject_box_obj.appendChild(subject_ul);
+        // For every course in subject
+        var transaction = db.transaction(["course"], "readonly");
+        var store = transaction.objectStore("course");
+        var index = store.index("subject_symbol");
+        var keyRange = IDBKeyRange.only(current_subject[current_subject.length - 1]);
+        index.openCursor(keyRange).onsuccess = function(e){
+            var cursor = e.target.result;
+            if (cursor){
+                var course = cursor.value;
+                // Make course link
+                var course_link = document.createElement('a');
+                course_link.setAttribute('id', course['course_symbol']);
+                course_link.setAttribute('class', 'course_link');
+                course_link.setAttribute('onclick', "show_sections(this.id)");
+                course_link.setAttribute('data-toggle', 'modal');
+                course_link.setAttribute('data-target', '#sections_modal');
+                course_link.setAttribute('href', 'javascript:;');
+                course_link.innerHTML = course['course_name'];
+                // Put link inside li element
+                var course_li = document.createElement('li');
+                course_li.appendChild(course_link);
+                // Put li element inside ul
+                subject_ul.appendChild(course_li);
+                cursor.continue();
+            }
+        };
+    } else{
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function(){
+            if (xhttp.readyState == 4 && xhttp.status == 200){
+                text_data = xhttp.responseText;
+                courses_list = parseTextList(text_data);
+
+                // Make a ul element
+                var subject_ul = document.createElement('ul');
+                subject_ul.setAttribute('id', courses_list[0]['subject'] + "_ul");
+                // Put the ul element inside of subject_box
+                subject_box_obj.appendChild(subject_ul);
+                // For every course in subject
+                for (var i = 0; i < courses_list.length; i++){
+                    var course = courses_list[i];
+                    // Make course link
+                    var course_link = document.createElement('a');
+                    course_link.setAttribute('id', course['course_symbol']);
+                    course_link.setAttribute('class', 'course_link');
+                    course_link.setAttribute('onclick', "show_sections(this.id)");
+                    course_link.setAttribute('data-toggle', 'modal');
+                    course_link.setAttribute('data-target', '#sections_modal');
+                    course_link.setAttribute('href', 'javascript:;');
+                    course_link.innerHTML = course['course_name'];
+                    // Put link inside li element
+                    var course_li = document.createElement('li');
+                    course_li.appendChild(course_link);
+                    // Put li element inside ul
+                    subject_ul.appendChild(course_li);
+                }
+            }
         }
-    };
+        xhttp.open("GET", "/courses/" + current_subject[current_subject.length - 1], true);
+        xhttp.send();
+    }
 });
 
 function add_section_temp(id){
@@ -159,39 +441,70 @@ function add_section_temp(id){
             return;
         }
     }
+    if (idbSupported){
+        var transaction = db.transaction(["section"], "readonly");
+        var store = transaction.objectStore("section");
+        var getSection = store.get(id);
+        getSection.onsuccess = function(e){
+            var section = e.target.result;
+            var start_formatted = "2015-10-09" + 'T' + section['start_time'] + ':00';
+            var end_formatted = "2015-10-09" + 'T' + section['end_time'] + ':00';
 
-    var transaction = db.transaction(["section"], "readonly");
-    var store = transaction.objectStore("section");
-    var getSection = store.get(id);
-    getSection.onsuccess = function(e){
-        var section = e.target.result;
-        var start_formatted = "2015-10-09" + 'T' + section['start_time'] + ':00';
-        var end_formatted = "2015-10-09" + 'T' + section['end_time'] + ':00';
-
-        // Adding course to calendar
-        if (section['dow'] == '[]'){
-            var unscheduled_section = document.createElement('div');
-            unscheduled_section.setAttribute('id', "temp_" + id);
-            unscheduled_section.innerHTML = "<p>" + section['course'] + "</p>";
-            document.getElementById("unscheduled").appendChild(unscheduled_section);
-        }
-        else {
-            var section_event = {
-                title: section['course'],
-                id: "temp_" + id,
-                //TODO add start and end date functionality
-                start: start_formatted,
-                end: end_formatted,
-                dow: section['dow'],
-                section: section['section'],
-                instructor: section['instructor'],
-                room: section['room'],
-                overview: section['overview'],
-                requirements: section['requirements']
+            // Adding course to calendar
+            if (section['dow'] == '[]'){
+                var unscheduled_section = document.createElement('div');
+                unscheduled_section.setAttribute('id', "temp_" + id);
+                unscheduled_section.innerHTML = "<p>" + section['course'] + "</p>";
+                document.getElementById("unscheduled").appendChild(unscheduled_section);
             }
-            $('#calendar').fullCalendar('renderEvent', section_event);
+            else {
+                var section_event = {
+                    title: section['course'],
+                    id: "temp_" + id,
+                    //TODO add start and end date functionality
+                    start: start_formatted,
+                    end: end_formatted,
+                    dow: section['dow'],
+                    section: section['section'],
+                    instructor: section['instructor'],
+                    room: section['room'],
+                    overview: section['overview'],
+                    requirements: section['requirements']
+                }
+                $('#calendar').fullCalendar('renderEvent', section_event);
+            }
+            //TODO Add a temporarily increasing number of courses and hours per week
         }
-        //TODO Add a temporarily increasing number of courses and hours per week
+    } else{
+        $.get("/section/" + id, function(section_request_data){
+            var section = JSON.parse(section_request_data)[0];
+            var start_formatted = "2015-10-09" + 'T' + section['start_time'] + ':00';
+            var end_formatted = "2015-10-09" + 'T' + section['end_time'] + ':00';
+
+            // Adding course to calendar
+            if (section['dow'] == '[]'){
+                var unscheduled_section = document.createElement('div');
+                unscheduled_section.setAttribute('id', "temp_" + id);
+                unscheduled_section.innerHTML = "<p>" + section['course'] + "</p>";
+                document.getElementById("unscheduled").appendChild(unscheduled_section);
+            }
+            else {
+                var section_event = {
+                    title: section['course'],
+                    id: "temp_" + id,
+                    //TODO add start and end date functionality
+                    start: start_formatted,
+                    end: end_formatted,
+                    dow: section['dow'],
+                    section: section['section'],
+                    instructor: section['instructor'],
+                    room: section['room'],
+                    overview: section['overview'],
+                    requirements: section['requirements']
+                }
+                $('#calendar').fullCalendar('renderEvent', section_event);
+            }
+        });
     }
 }
 
@@ -227,96 +540,174 @@ function show_sections(inputid){
     while (modal_ul.firstChild){
         modal_ul.removeChild(modal_ul.firstChild);
     }
-    // Set modal title
-    var transaction_title = db.transaction(["section"], "readonly");
-    var store_title = transaction_title.objectStore("section");
-    var indexTitle = store_title.index("course_symbol");
-    var getTitle = indexTitle.get(inputid);
-    getTitle.onsuccess = function(e){
-        document.getElementById('modal_title').innerHTML = "<b>" + e.target.result['course'] + "</b>";
-    }
-    // turn into html section links
-
-    var transaction = db.transaction(["section"], "readonly");
-    var store = transaction.objectStore("section");
-    var index = store.index("course_symbol");
-    var keyRange = IDBKeyRange.only(inputid);
-    index.openCursor(keyRange).onsuccess = function(e){
-        var cursor = e.target.result;
-        if (cursor){
-            var section = cursor.value;
-            var section_link = document.createElement('a');
-            section_link.setAttribute('id', section['section_id']);
-            section_link.setAttribute('class', 'section_link');
-            section_link.setAttribute('onclick', "add_section_visual(this.id)");
-            section_link.setAttribute('href', 'javascript:;');
-            var times = section['start_time'] + "-" + section['end_time'];
-            if (section['start_time'] == 'None'){
-                times = "";
-            }
-            var days = section["meeting_days"];
-            if (section['meeting_days'] == null){
-                 days = "";
-            }
-            section_link.innerHTML = "Section " + section['section'] + "  " + days + " " + times + "  " + section['instructor'];
-            // Check if course is aleady in cart
-            var sections_in_cart = document.getElementById("cart").children;
-            for (var j = 0; j < sections_in_cart.length; j++){
-                // If yes, make link red
-                if (sections_in_cart[j].id == section['id'] && sections_in_cart[j].getAttribute('class').indexOf("section_cart") != -1){
-                    section_link.style.color = 'red';
-                }
-            }
-
-            var li = document.createElement('li');
-            li.setAttribute('id', section['section_id'] + '_li');
-            li.setAttribute('class', 'section_li');
-
-
-            // insert html section links to dialog div
-            li.appendChild(section_link);
-
-            var id = section['section_id'];
-
-            // hover functionality
-            $(section_link).hoverIntent(call_add_section_temp.call(this, id), call_remove_section_temp.call(this, id));
-
-            document.getElementById('modal_ul').appendChild(li);
-            cursor.continue();
+    if (idbSupported){
+        // Set modal title
+        var transaction_title = db.transaction(["section"], "readonly");
+        var store_title = transaction_title.objectStore("section");
+        var indexTitle = store_title.index("course_symbol");
+        var getTitle = indexTitle.get(inputid);
+        getTitle.onsuccess = function(e){
+            document.getElementById('modal_title').innerHTML = "<b>" + e.target.result['course'] + "</b>";
         }
-    };
+        // turn into html section links
+
+        var transaction = db.transaction(["section"], "readonly");
+        var store = transaction.objectStore("section");
+        var index = store.index("course_symbol");
+        var keyRange = IDBKeyRange.only(inputid);
+        index.openCursor(keyRange).onsuccess = function(e){
+            var cursor = e.target.result;
+            if (cursor){
+                var section = cursor.value;
+                var section_link = document.createElement('a');
+                section_link.setAttribute('id', section['section_id']);
+                section_link.setAttribute('class', 'section_link');
+                section_link.setAttribute('onclick', "add_section_visual(this.id)");
+                section_link.setAttribute('href', 'javascript:;');
+                var times = section['start_time'] + "-" + section['end_time'];
+                if (section['start_time'] == 'None'){
+                    times = "";
+                }
+                var days = section["meeting_days"];
+                if (section['meeting_days'] == null){
+                     days = "Unscheduled";
+                }
+                section_link.innerHTML = "Section " + section['section'] + "  " + days + " " + times + "  " + section['instructor'];
+                // Check if course is aleady in cart
+                var sections_in_cart = document.getElementById("cart").children;
+                for (var j = 0; j < sections_in_cart.length; j++){
+                    // If yes, make link red
+                    if (sections_in_cart[j].id == section['id'] && sections_in_cart[j].getAttribute('class').indexOf("section_cart") != -1){
+                        section_link.style.color = 'red';
+                    }
+                }
+
+                var li = document.createElement('li');
+                li.setAttribute('id', section['section_id'] + '_li');
+                li.setAttribute('class', 'section_li');
+
+
+                // insert html section links to dialog div
+                li.appendChild(section_link);
+
+                var id = section['section_id'];
+
+                // hover functionality
+                $(section_link).hoverIntent(call_add_section_temp.call(this, id), call_remove_section_temp.call(this, id));
+
+                document.getElementById('modal_ul').appendChild(li);
+                cursor.continue();
+            }
+        };
+    } else{
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function(){
+        if (xhttp.readyState == 4 && xhttp.status == 200){
+            // Get ajax sections info
+            text_data = xhttp.responseText;
+            sections_list = parseTextList(text_data);
+            // Set modal title
+            document.getElementById('modal_title').innerHTML = sections_list[0]['course'];
+            // turn into html section links
+            for (var i = 0; i < sections_list.length; i++){
+                var section = sections_list[i];
+                var section_link = document.createElement('a');
+                section_link.setAttribute('id', section['section_id']);
+                section_link.setAttribute('class', 'section_link');
+                section_link.setAttribute('onclick', "add_section_visual(this.id)");
+                section_link.setAttribute('href', 'javascript:;');
+                var times = section['start_time'] + "-" + section['end_time'];
+                if (section['start_time'] == 'None'){
+                    times = "";
+                }
+                var days = section["meeting_days"];
+                if (section['meeting_days'] == null){
+                     days = "Unscheduled";
+                }
+                section_link.innerHTML = "Section " + section['section'] + "  " + days + " " + times + "  " + section['instructor'];
+                // Check if course is aleady in cart
+                var sections_in_cart = document.getElementById("cart").children;
+                for (var j = 0; j < sections_in_cart.length; j++){
+                    // If yes, make link red
+                    if (sections_in_cart[j].id == section['id'] && sections_in_cart[j].getAttribute('class') == "section_cart"){
+                        section_link.style.color = 'red';
+                    }
+                }
+
+                var li = document.createElement('li');
+                li.setAttribute('id', section['section_id'] + '_li');
+                li.setAttribute('class', 'section_li');
+
+                var id = section['section_id'];
+                // insert html section links to dialog div
+                li.appendChild(section_link);
+                // hover functionality
+                $(section_link).hoverIntent(call_add_section_temp.call(this, id), call_remove_section_temp.call(this, id));
+
+                document.getElementById('modal_ul').appendChild(li);
+            }
+        }
+    }
+    xhttp.open("GET", "/sections/" + inputid, true);
+    xhttp.send(); 
+    }
 }
 
 function add_component_temp(symbol, id){
     var comp_link = document.getElementById(symbol);
-	if (comp_link.style.color == 'red'){
+    if (comp_link.style.color == 'red'){
             return;
-	}
+    }
 
-    var transaction = db.transaction(["component"], "readonly");
-    var store = transaction.objectStore("component");
-    var getComponent = store.get(symbol);
-    getComponent.onsuccess = function(e){
-        var comp = e.target.result;
-        
-        var start_formatted = "2015-10-09" + 'T' + comp['start_time'] + ':00';
-        var end_formatted = "2015-10-09" + 'T' + comp['end_time'] + ':00';
+    if (idbSupported){
+        var transaction = db.transaction(["component"], "readonly");
+        var store = transaction.objectStore("component");
+        var getComponent = store.get(symbol);
+        getComponent.onsuccess = function(e){
+            var comp = e.target.result;
+            
+            var start_formatted = "2015-10-09" + 'T' + comp['start_time'] + ':00';
+            var end_formatted = "2015-10-09" + 'T' + comp['end_time'] + ':00';
 
-        // Adding course to calendar
-        if (comp['dow'] != '[]'){
-            var comp_event = {
-                title: comp['course'],
-                id: "temp_" + id + "_comp",
-                //TODO add start and end date functionality
-                start: start_formatted,
-                end: end_formatted,
-                component: comp['component'],
-                dow: comp['dow'],
-                section: comp['section'],
-                room: comp['room']
+            // Adding course to calendar
+            if (comp['dow'] != '[]'){
+                var comp_event = {
+                    title: comp['course'],
+                    id: "temp_" + id + "_comp",
+                    //TODO add start and end date functionality
+                    start: start_formatted,
+                    end: end_formatted,
+                    component: comp['component'],
+                    dow: comp['dow'],
+                    section: comp['section'],
+                    room: comp['room']
+                }
+                $('#calendar').fullCalendar('renderEvent', comp_event);
             }
-            $('#calendar').fullCalendar('renderEvent', comp_event);
         }
+    } else{
+        $.get("/component/" + symbol, function(comp_data){
+            var comp = parseTextList(comp_data)[0];
+
+            var start_formatted = "2015-10-09" + 'T' + comp['start_time'] + ':00';
+            var end_formatted = "2015-10-09" + 'T' + comp['end_time'] + ':00';
+
+            // Adding course to calendar
+            if (comp['dow'] != '[]'){
+                var comp_event = {
+                    title: comp['course'],
+                    id: "temp_" + id + "_comp",
+                    //TODO add start and end date functionality
+                    start: start_formatted,
+                    end: end_formatted,
+                    component: comp['component'],
+                    dow: comp['dow'],
+                    section: comp['section'],
+                    room: comp['room']
+                }
+                $('#calendar').fullCalendar('renderEvent', comp_event);
+            }
+        });
     }
 }
 
@@ -344,7 +735,7 @@ function call_add_section(id){
     };
 }
 
-// Show components of section
+// Show components
 function add_section_visual(id){
     // Check if course is aleady in cart
     var sections_in_cart = document.getElementById("cart").children;
@@ -364,55 +755,93 @@ function add_section_visual(id){
     }
     section_link.style.color = 'red';
 
-    var components = [];
-    var transaction = db.transaction(['component'], 'readonly');
-    var store = transaction.objectStore('component');
-    //var index = store.index('section_id');
-    //var keyRange = IDBKeyRange.only(id);
-    store.openCursor().onsuccess = function(e){
-        var cursor = e.target.result;
-        if (cursor){
-            if (cursor.value['section_id'] == id){
-                components.push(cursor.value);
+    if (idbSupported){
+        // See if there are any components for this section
+        var components = [];
+        var transaction = db.transaction(['component'], 'readonly');
+        var store = transaction.objectStore('component');
+        //var index = store.index('section_id');
+        //var keyRange = IDBKeyRange.only(id);
+        store.openCursor().onsuccess = function(e){
+            var cursor = e.target.result;
+            if (cursor){
+                if (cursor.value['section_id'] == id){
+                    components.push(cursor.value);
+                }
+                cursor.continue();
             }
-            cursor.continue();
         }
-    }
 
-    transaction.oncomplete = function(){
-        if (components.length != 0){
-            comp_selected = false;
+        transaction.oncomplete = function(){
+            if (components.length != 0){
+                comp_selected = false;
 
-            var comp_panel = document.createElement('div');
-            comp_panel.setAttribute('class', 'panel panel-default');
-            var comp_heading = document.createElement('div');
-            comp_heading.setAttribute('class', 'panel-heading');
-            comp_heading.innerHTML = "Choose a component:";
-            var comp_body = document.createElement('div');
-            comp_body.setAttribute('class', 'panel-body');
-            comp_panel.appendChild(comp_heading);
-            comp_panel.appendChild(comp_body);
-            for (var i = 0; i < components.length; i++){
-                var comp_link = document.createElement('a');
-                comp_link.setAttribute('id', components[i]['component_symbol']);
-                comp_link.setAttribute('class', "component_link");
-                comp_link.setAttribute('href', 'javascript:;');
-                comp_link.style.display = 'block';
-                comp_link.innerHTML = "<b>" + components[i]['component'] + ":</b> Section " + components[i]['component_section'] + ", " + components[i]['meeting_days'] + " " + components[i]['start_time'] + "-" + components[i]['end_time'] + ", " + components[i]['room'];
-                comp_body.appendChild(comp_link);
-                // hover functionality
-                $(comp_link).hoverIntent(
-                    call_add_comp_temp.call(this, components[i]['component_symbol'], id),
-                    call_remove_comp_temp.call(this, id)
-                );
+                var comp_panel = document.createElement('div');
+                comp_panel.setAttribute('class', 'panel panel-default');
+                var comp_heading = document.createElement('div');
+                comp_heading.setAttribute('class', 'panel-heading');
+                comp_heading.innerHTML = "Choose a component:";
+                var comp_body = document.createElement('div');
+                comp_body.setAttribute('class', 'panel-body');
+                comp_panel.appendChild(comp_heading);
+                comp_panel.appendChild(comp_body);
+                for (var i = 0; i < components.length; i++){
+                    var comp_link = document.createElement('a');
+                    comp_link.setAttribute('id', components[i]['component_symbol']);
+                    comp_link.setAttribute('class', "component_link");
+                    comp_link.setAttribute('href', 'javascript:;');
+                    comp_link.style.display = 'block';
+                    comp_link.innerHTML = "<b>" + components[i]['component'] + ":</b> Section " + components[i]['component_section'] + ", " + components[i]['meeting_days'] + " " + components[i]['start_time'] + "-" + components[i]['end_time'] + ", " + components[i]['room'];
+                    comp_body.appendChild(comp_link);
+                    // hover functionality
+                    $(comp_link).hoverIntent(
+                        call_add_comp_temp.call(this, components[i]['component_symbol'], id),
+                        call_remove_comp_temp.call(this, id)
+                    );
+                }
+                insertAfter(comp_panel, section_link);
+                add_section(id);
+            } else{
+                add_section(id);
+                $('#sections_modal').modal('hide')
             }
-            insertAfter(comp_panel, section_link);
-            //call_add_section.call(this, id);
-            add_section(id);
-        } else{
-            add_section(id);
-            $('#sections_modal').modal('hide')
         }
+    } else{
+        $.get("/components/" + id, function(components_data){
+            if (components_data != "[]"){
+                comp_selected = false;
+
+                var components = parseTextList(components_data);
+                var comp_panel = document.createElement('div');
+                comp_panel.setAttribute('class', 'panel panel-default');
+                var comp_heading = document.createElement('div');
+                comp_heading.setAttribute('class', 'panel-heading');
+                comp_heading.innerHTML = "Choose a component:";
+                var comp_body = document.createElement('div');
+                comp_body.setAttribute('class', 'panel-body');
+                comp_panel.appendChild(comp_heading);
+                comp_panel.appendChild(comp_body);
+                for (var i = 0; i < components.length; i++){
+                    var comp_link = document.createElement('a');
+                    comp_link.setAttribute('id', components[i]['component_symbol']);
+                    comp_link.setAttribute('class', "component_link");
+                    comp_link.setAttribute('href', 'javascript:;');
+                    comp_link.style.display = 'block';
+                    comp_link.innerHTML = "<b>" + components[i]['component'] + ":</b> Section " + components[i]['component_section'] + ", " + components[i]['meeting_days'] + " " + components[i]['start_time'] + "-" + components[i]['end_time'] + ", " + components[i]['room'];
+                    comp_body.appendChild(comp_link);
+                    // hover functionality
+                    $(comp_link).hoverIntent(
+                        call_add_comp_temp.call(this, components[i]['component_symbol'], id),
+                        call_remove_comp_temp.call(this, id)
+                    );
+                }
+                insertAfter(comp_panel, section_link);
+                add_section(id);
+            } else {
+                add_section(id);
+                $('#sections_modal').modal('hide')
+            }
+        }); 
     }
 }
 
@@ -424,42 +853,110 @@ $(document).on('click', '.component_link', function(){
     comp_selected = true;
     var comp_link = document.getElementById(symbol);
 
-	if (comp_link.style.color == 'red'){
+    if (comp_link.style.color == 'red'){
             window.alert("This course is already in your cart.");
             return;
-	}
+    }
     comp_link.style.color = 'red';
 
-    var transaction = db.transaction(['component'], 'readonly');
-    var store = transaction.objectStore('component');
-    var getComp = store.get(symbol);
-    getComp.onsuccess = function(e){
-        var comp = e.target.result;
+    if (idbSupported){
+        var transaction = db.transaction(['component'], 'readonly');
+        var store = transaction.objectStore('component');
+        var getComp = store.get(symbol);
+        getComp.onsuccess = function(e){
+            var comp = e.target.result;
 
-        // Store to local storage
-        if (typeof(Storage) !== "undefined"){
-            localStorage.setItem("component_" + id.toString(), JSON.stringify({'symbol':symbol, 'id':id, 'data':comp}));
-        }
-
-        var start_formatted = "2015-10-09" + 'T' + comp['start_time'] + ':00';
-        var end_formatted = "2015-10-09" + 'T' + comp['end_time'] + ':00';
-
-        // Adding course to calendar
-        if (comp['dow'] != '[]'){
-            var comp_event = {
-                title: comp['course'],
-                id: id + "_comp",
-                //TODO add start and end date functionality
-                start: start_formatted,
-                end: end_formatted,
-                component: comp['component'],
-                dow: comp['dow'],
-                section: comp['section'],
-                room: comp['room']
+            // Store to local storage
+            if (typeof(Storage) !== "undefined"){
+                localStorage.setItem("component_" + id.toString(), JSON.stringify({'symbol':symbol, 'id':id, 'data':comp}));
             }
-            $('#calendar').fullCalendar('renderEvent', comp_event, 'stick');
+
+            var start_formatted = "2015-10-09" + 'T' + comp['start_time'] + ':00';
+            var end_formatted = "2015-10-09" + 'T' + comp['end_time'] + ':00';
+
+            // Adding course to calendar
+            if (comp['dow'] != '[]'){
+                var comp_event = {
+                    title: comp['course'],
+                    id: id + "_comp",
+                    //TODO add start and end date functionality
+                    start: start_formatted,
+                    end: end_formatted,
+                    component: comp['component'],
+                    dow: comp['dow'],
+                    section: comp['section'],
+                    room: comp['room']
+                }
+                $('#calendar').fullCalendar('renderEvent', comp_event, 'stick');
+            }
+            $('#sections_modal').modal('hide')
         }
-        $('#sections_modal').modal('hide')
+        transaction.oncomplete = function(){
+            // Increment hours per week
+            var total_hrs = 0;
+            var cal_events = $('#calendar').fullCalendar('clientEvents', idOrFilter = id + "_comp");
+            for (var j = 0; j < cal_events.length; j++){
+                var start = cal_events[j]['start'].toDate();
+                var end = cal_events[j]['end'].toDate();
+                var min = (end - start) / 60000;
+                // in case of unscheduled courses
+                if (isNaN(min)){
+                    min = 0;
+                }
+                if (min % 30 == 20){
+                    min += 10;
+                }
+                total_hrs += parseFloat(min) / 60;
+            }
+            var old_hr = parseFloat(document.getElementById("course_hours").innerHTML);
+            document.getElementById("course_hours").innerHTML = old_hr + total_hrs;
+        }
+    } else{
+        $.get("/component/" + symbol, function(comp_data){
+            var comp = parseTextList(comp_data)[0];
+
+            // Store to local storage
+            if (typeof(Storage) !== "undefined"){
+                localStorage.setItem("component_" + id.toString(), JSON.stringify({'symbol':symbol, 'id':id, 'data':comp}));
+            }
+
+            var start_formatted = "2015-10-09" + 'T' + comp['start_time'] + ':00';
+            var end_formatted = "2015-10-09" + 'T' + comp['end_time'] + ':00';
+
+            // Adding course to calendar
+            if (comp['dow'] != '[]'){
+                var comp_event = {
+                    title: comp['course'],
+                    id: id + "_comp",
+                    //TODO add start and end date functionality
+                    start: start_formatted,
+                    end: end_formatted,
+                    component: comp['component'],
+                    dow: comp['dow'],
+                    section: comp['section'],
+                    room: comp['room']
+                }
+                $('#calendar').fullCalendar('renderEvent', comp_event, 'stick');
+            }
+            $('#sections_modal').modal('hide')
+            var total_hrs = 0;
+            var cal_events = $('#calendar').fullCalendar('clientEvents', idOrFilter = id + "_comp");
+            for (var j = 0; j < cal_events.length; j++){
+                var start = cal_events[j]['start'].toDate();
+                var end = cal_events[j]['end'].toDate();
+                var min = (end - start) / 60000;
+                // in case of unscheduled courses
+                if (isNaN(min)){
+                    min = 0;
+                }
+                if (min % 30 == 20){
+                    min += 10;
+                }
+                total_hrs += parseFloat(min) / 60;
+            }
+            var old_hr = parseFloat(document.getElementById("course_hours").innerHTML);
+            document.getElementById("course_hours").innerHTML = old_hr + total_hrs;
+        });        
     }
 });
 
@@ -486,7 +983,7 @@ function re_add_component(symbol, id, data){
     }
 }
 
-function add_section(id){
+function add_section_supported(id){
     // Check if course is aleady in cart
     var sections_in_cart = document.getElementById("cart").children;
     for (var i = 0; i < sections_in_cart.length; i++){
@@ -511,7 +1008,7 @@ function add_section(id){
             cursor.continue();
         }
     }
-    /* THIS SHOULD WORK?
+    /* WHY DOESN'T THIS WORK!?
     var getSection = store.get(id);
     getSection.onsuccess = function(e){
         section = e.target.result;
@@ -581,43 +1078,43 @@ function add_section(id){
             panel.setAttribute('class', 'panel-collapse collapse');
             panel.setAttribute('id', id + '_collapse');
 
-				var panel_body = document.createElement('div');
-				panel_body.setAttribute('class', 'panel-body');
-				panel.appendChild(panel_body);
-				
-					var course_p = document.createElement('p');
-					course_p.innerHTML = "<h4><b>" + section['course'] + "</b></h4>";
+                var panel_body = document.createElement('div');
+                panel_body.setAttribute('class', 'panel-body');
+                panel.appendChild(panel_body);
+                
+                    var course_p = document.createElement('p');
+                    course_p.innerHTML = "<h4><b>" + section['course'] + "</b></h4>";
 
-					var section_p = document.createElement('p');
-					section_p.innerHTML = "Section " + section['section'];
-					
-					var instructor_p = document.createElement('p');
-					instructor_p.innerHTML = section['instructor'];
+                    var section_p = document.createElement('p');
+                    section_p.innerHTML = "Section " + section['section'];
+                    
+                    var instructor_p = document.createElement('p');
+                    instructor_p.innerHTML = section['instructor'];
 
-					var room_p = document.createElement('p');
-					room_p.innerHTML = section['room'];
+                    var room_p = document.createElement('p');
+                    room_p.innerHTML = section['room'];
 
-					var overview_p = document.createElement('p');
-					overview_p.innerHTML = "<b>Overview:</b> " + section['overview'];
+                    var overview_p = document.createElement('p');
+                    overview_p.innerHTML = "<b>Overview:</b> " + section['overview'];
 
-					var requirements_p = document.createElement('p');
-					requirements_p.innerHTML = "<b>Requirements:</b> " + section['requirements'];
+                    var requirements_p = document.createElement('p');
+                    requirements_p.innerHTML = "<b>Requirements:</b> " + section['requirements'];
 
                                         var univ_num_p = document.createElement('p');
                                         univ_num_p.innerHTML = "<b>CAESAR Class Nbr</b> " + section['univ_num'];
 
-					var remove_a = document.createElement('a');
-					remove_a.setAttribute('onclick', 'remove_course(this.parentElement.parentElement.parentElement.id)');
-					remove_a.setAttribute('href', 'javascript:;');
-					remove_a.innerHTML = "Remove";
+                    var remove_a = document.createElement('a');
+                    remove_a.setAttribute('onclick', 'remove_course(this.parentElement.parentElement.parentElement.id)');
+                    remove_a.setAttribute('href', 'javascript:;');
+                    remove_a.innerHTML = "Remove";
 
-				panel_body.appendChild(course_p);
-				panel_body.appendChild(instructor_p);
-				panel_body.appendChild(section_p);
-				panel_body.appendChild(room_p);
-				panel_body.appendChild(overview_p);
-				panel_body.appendChild(requirements_p);
-				panel_body.appendChild(univ_num_p);
+                panel_body.appendChild(course_p);
+                panel_body.appendChild(instructor_p);
+                panel_body.appendChild(section_p);
+                panel_body.appendChild(room_p);
+                panel_body.appendChild(overview_p);
+                panel_body.appendChild(requirements_p);
+                panel_body.appendChild(univ_num_p);
 
             if (descriptions != "") {
                 var descriptions_link = document.createElement('a');
@@ -700,6 +1197,187 @@ function add_section(id){
             document.getElementById("course_hours").innerHTML = old_hr + total_hrs;
         }
     }
+}
+
+function add_section_not_supported(id){
+    // Check if course is aleady in cart
+    var sections_in_cart = document.getElementById("cart").children;
+    for (var i = 0; i < sections_in_cart.length; i++){
+        if (sections_in_cart[i].id == id){
+            window.alert("This course is already in your cart.");
+            return;
+        }
+    }
+
+    $.get("/section/" + id, function(section_request_data){
+        $.get("/descriptions/" + id, function(descriptions_data){
+            // Adding info to cart
+            // Create containing div
+            var section_data = document.createElement('div');
+            section_data.setAttribute('class', 'section_cart panel panel-default');
+            section_data.setAttribute('id', id);
+
+            // Populate div with content
+            var section = parseTextList(section_request_data)[0];
+            var descriptions = parseTextList(descriptions_data)[0];
+
+            // Store to local storage
+            if(typeof(Storage) !== "undefined"){
+                localStorage.setItem("section_" + id.toString(), JSON.stringify({'id':id, 'data':section, 'desc':descriptions}));
+            }
+            
+            // Create panel heading and panel
+            var panel_head = document.createElement('div');
+            panel_head.setAttribute('class', 'panel-heading');
+
+            var panel_row = document.createElement('div');
+            panel_row.setAttribute('class', 'row');
+
+            panel_head.appendChild(panel_row);
+
+                var panel_title = document.createElement('h4');
+                panel_title.setAttribute('class', 'panel-title col-md-11');
+                panel_title.innerHTML = "<a data-toggle='collapse' href='#" + id + "_collapse'>" + section['course'] + "</a>";
+
+                panel_row.appendChild(panel_title);
+
+                var panel_remove = document.createElement('a');
+                panel_remove.setAttribute('class', 'col-md-1');
+                panel_remove.setAttribute('role', 'button');
+                panel_remove.setAttribute('onclick', 'remove_course(this.parentElement.parentElement.parentElement.id)');
+
+                var panel_remove_button = document.createElement('span');
+                panel_remove_button.setAttribute('class', 'glyphicon glyphicon-remove');
+                panel_remove.appendChild(panel_remove_button);
+
+                panel_row.appendChild(panel_remove);
+
+            var panel = document.createElement('div');
+            panel.setAttribute('class', 'panel-collapse collapse');
+            panel.setAttribute('id', id + '_collapse');
+
+                var panel_body = document.createElement('div');
+                panel_body.setAttribute('class', 'panel-body');
+                panel.appendChild(panel_body);
+                
+                    var course_p = document.createElement('p');
+                    course_p.innerHTML = "<h4><b>" + section['course'] + "</b></h4>";
+
+                    var section_p = document.createElement('p');
+                    section_p.innerHTML = "Section " + section['section'];
+                    
+                    var instructor_p = document.createElement('p');
+                    instructor_p.innerHTML = section['instructor'];
+
+                    var room_p = document.createElement('p');
+                    room_p.innerHTML = section['room'];
+
+                    var overview_p = document.createElement('p');
+                    overview_p.innerHTML = "<b>Overview:</b> " + section['overview'];
+
+                    var requirements_p = document.createElement('p');
+                    requirements_p.innerHTML = "<b>Requirements:</b> " + section['requirements'];
+
+                    var remove_a = document.createElement('a');
+                    remove_a.setAttribute('onclick', 'remove_course(this.parentElement.parentElement.parentElement.id)');
+                    remove_a.setAttribute('href', 'javascript:;');
+                    remove_a.innerHTML = "Remove";
+
+                panel_body.appendChild(course_p);
+                panel_body.appendChild(instructor_p);
+                panel_body.appendChild(section_p);
+                panel_body.appendChild(room_p);
+                panel_body.appendChild(overview_p);
+                panel_body.appendChild(requirements_p);
+
+            descriptions = parseTextList(descriptions_data)[0];
+
+            if (descriptions != "") {
+                var descriptions_link = document.createElement('a');
+                descriptions_link.setAttribute('role', 'button');
+                descriptions_link.setAttribute('data-toggle', 'collapse');
+                descriptions_link.setAttribute('data-target', '#' + id + '_descriptions');
+                descriptions_link.innerHTML = "Toggle More Descriptions";
+                var descriptions_div = document.createElement('div');
+                descriptions_div.setAttribute('class', 'collapse');
+                descriptions_div.setAttribute('id', id + '_descriptions');
+                for (var key in descriptions){
+                    var desc_name = document.createElement('b');
+                    desc_name.innerHTML = key;
+                    descriptions_div.appendChild(desc_name);
+                    var desc_desc = document.createElement('p');
+                    desc_desc.innerHTML = descriptions[key];
+                    descriptions_div.appendChild(desc_desc);
+                }
+                panel_body.appendChild(descriptions_link);
+                panel_body.appendChild(descriptions_div);
+            }
+
+            panel_body.appendChild(document.createElement('br'));
+            panel_body.appendChild(remove_a);
+
+            section_data.appendChild(panel_head);
+            section_data.appendChild(panel);
+
+            // Put the course in the cart
+            document.getElementById("cart").appendChild(section_data);
+
+            var start_formatted = "2015-10-09" + 'T' + section['start_time'] + ':00';
+            var end_formatted = "2015-10-09" + 'T' + section['end_time'] + ':00';
+
+            // Adding course to calendar
+            if (section['dow'] == '[]'){
+                var unscheduled_section = document.createElement('div');
+                unscheduled_section.setAttribute('id', id);
+                unscheduled_section.innerHTML = "<p>" + section['course'] + "</p>";
+                document.getElementById("unscheduled").appendChild(unscheduled_section);
+            }
+            else {
+                var section_event = {
+                    title: section['course'],
+                    id: id,
+                    //TODO add start and end date functionality
+                    start: start_formatted,
+                    end: end_formatted,
+                    dow: section['dow'],
+                    section: section['section'],
+                    instructor: section['instructor'],
+                    room: section['room'],
+                    overview: section['overview'],
+                    requirements: section['requirements']
+                }
+                $('#calendar').fullCalendar('renderEvent', section_event, 'stick');
+            }
+
+            // Increment number of courses
+            var num = parseInt(document.getElementById("number_of_courses").innerHTML) + 1;
+            document.getElementById("number_of_courses").innerHTML = num;
+
+            // Increment hours per week
+            var total_hrs = 0;
+            var cal_events = $('#calendar').fullCalendar('clientEvents', idOrFilter = id);
+            for (var j = 0; j < cal_events.length; j++){
+                var start = cal_events[j]['start'].toDate();
+                var end = cal_events[j]['end'].toDate();
+                var min = (end - start) / 60000;
+                // in case of unscheduled courses
+                if (isNaN(min)){
+                    min = 0;
+                }
+                if (min % 30 == 20){
+                    min += 10;
+                }
+                total_hrs += parseFloat(min) / 60;
+            }
+            var old_hr = parseFloat(document.getElementById("course_hours").innerHTML);
+            document.getElementById("course_hours").innerHTML = old_hr + total_hrs;
+        });
+    });
+}
+
+function add_section(id){
+    if (idbSupported){ add_section_supported(id); }
+    else { add_section_not_supported(id); }
 }
 
 function re_add_section(id, data, desc){
@@ -895,6 +1573,7 @@ function decrement_hrs(id){
 
 function remove_course(id){
     decrement_hrs(id);
+
     // Remove event from calendar
     $('#calendar').fullCalendar('removeEvents', idOrFilter = id);
     $('#calendar').fullCalendar('removeEvents', idOrFilter = id + "_comp");
@@ -946,158 +1625,24 @@ function back(input){
     }
 }
 
-// IndexedDB update methods
-function update_terms(){
-    $.get("/static/data/all_terms.json", function(all_terms){
-        // Initialize objectStore
-        var store = db.transaction(["term"], "readwrite").objectStore("term");
-        // delete old data
-        var clearRequest = store.clear();
-        // Catch possible error
-        clearRequest.onerror = function(e){
-            console.log("Error clearing terms: ", e.target.error.name);
-        }
-        // begin adding
-        for (var i = 0; i < all_terms.length; i++){
-            var request = store.add(all_terms[i]);
-            request.onerror = function(e){
-                console.log("Error adding terms: ", e.target.error.name);
-            }
-        }
-    });
-}
-
-function update_schools(){
-    $.get("/static/data/all_schools.json", function(all_schools){
-        // Initialize objectStore
-        var store = db.transaction(["school"], "readwrite").objectStore("school");
-        // delete old data
-        var clearRequest = store.clear();
-        // Catch possible error
-        clearRequest.onerror = function(e){
-            console.log("Error clearing schools: ", e.target.error.name);
-        }
-        // begin adding
-        for (var i = 0; i < all_schools.length; i++){
-            var request = store.add(all_schools[i]);
-            request.onerror = function(e){
-                console.log("Error adding schools: ", e.target.error.name);
-            }
-        }
-    });
-}
-
-function update_subjects(){
-    $.get("/static/data/all_subjects.json", function(all_subjects){
-        // Initialize objectStore
-        var store = db.transaction(["subject"], "readwrite").objectStore("subject");
-        // delete old data
-        var clearRequest = store.clear();
-        // Catch possible error
-        clearRequest.onerror = function(e){
-            console.log("Error clearing subjects: ", e.target.error.name);
-        }
-        // begin adding
-        for (var i = 0; i < all_subjects.length; i++){
-            var request = store.add(all_subjects[i]);
-            request.onerror = function(e){
-                console.log("Error adding subjects: ", e.target.error.name);
-            }
-        }
-    });
-}
-
-function update_courses(){
-    $.get("/static/data/all_courses.json", function(all_courses){
-        // Initialize objectStore
-        var store = db.transaction(["course"], "readwrite").objectStore("course");
-        // delete old data
-        var clearRequest = store.clear();
-        // Catch possible error
-        clearRequest.onerror = function(e){
-            console.log("Error clearing courses: ", e.target.error.name);
-        }
-        // begin adding
-        for (var j = 0; j < all_courses.length; j++){
-            var request = store.add(all_courses[j]);
-            request.onerror = function(e){
-                console.log("Error adding courses: ", e.target.error.name);
-            }
-        }
-    });
-}
-
-function update_sections(){
-    $.get("/static/data/all_sections.json", function(all_sections){
-        // Initialize objectStore
-        var store = db.transaction(["section"], "readwrite").objectStore("section");
-        // delete old data
-        var clearRequest = store.clear();
-        // Catch possible error
-        clearRequest.onerror = function(e){
-            console.log("Error clearing sections: ", e.target.error.name);
-        }
-        // begin adding
-        for (var j = 0; j < all_sections.length; j++){
-            var request = store.add(all_sections[j]);
-            request.onerror = function(e){
-                console.log("Error adding sections: ", e.target.error.name);
-            }
-        }
-    });
-}
-
-function update_descriptions(){
-    $.get("/static/data/all_descriptions.json", function(all_descriptions){
-        // Initialize objectStore
-        var store = db.transaction(["description"], "readwrite").objectStore("description");
-        // delete old data
-        var clearRequest = store.clear();
-        // Catch possible error
-        clearRequest.onerror = function(e){
-            console.log("Error clearing descriptions: ", e.target.error.name);
-        }
-        // begin adding
-        for (var j = 0; j < all_descriptions.length; j++){
-            var request = store.add(all_descriptions[j]);
-            request.onerror = function(e){
-                console.log("Error adding descriptions: ", e.target.error.name);
-            }
-        }
-    });
-}
-
-function update_components(){
-    $.get("/static/data/all_components.json", function(all_components){
-        // Initialize objectStore
-        var store = db.transaction(["component"], "readwrite").objectStore("component");
-        // delete old data
-        var clearRequest = store.clear();
-        // Catch possible error
-        clearRequest.onerror = function(e){
-            console.log("Error clearing components: ", e.target.error.name);
-        }
-        // begin adding
-        for (var j = 0; j < all_components.length; j++){
-            var request = store.add(all_components[j]);
-            request.onerror = function(e){
-                console.log("Error adding components: ", e.target.error.name);
-            }
-        }
-    });
-}
-
 $(document).ready(function(){
     set_current_term();
 
     // Check if indexed db is supported
-    if ("indexedDB" in window){ idbSupported = true; }
+    //if ("indexedDB" in window){ idbSupported = true; }
 
     if (idbSupported){
         // Open database
         var openRequest = indexedDB.open("cache", 1);
         // On first visit
         openRequest.onupgradeneeded = function(e){
+            // Put an update message
+            var updateDiv = $(document.createElement('div'));
+            updateDiv.attr('class', 'alert alert-success');
+            updateDiv.attr('role', 'alert');
+            updateDiv.text("Serif just received an update just in time for registration! You can now hover over courses before selecting them, and search has been streamlined. We're constantly looking to improve the user experience and more features will be added by the time Spring registration rolls around!");
+            $("#calendar").before(updateDiv);
+
             // If localstorage is supported
             if(typeof(Storage) !== "undefined"){
                 // If the version number doesn't exist, initalize it
@@ -1196,7 +1741,7 @@ $(document).ready(function(){
             // If localstorage is supported
             if(typeof(Storage) !== "undefined"){
                 // Compare version numbers to see if updates are needed
-                $.get("/indexedDBversion", function(version_num){
+                $.get("/static/data/indexedDBversion", function(version_num){
                     // If updates are needed, run update functions
                     if (parseInt(localStorage.getItem('indexedDBversion')) < parseInt(version_num)){
                         update_terms();
@@ -1211,7 +1756,6 @@ $(document).ready(function(){
                     }
                 });
             }
-
         }
     }
 
@@ -1308,8 +1852,8 @@ $(document).ready(function(){
     }
 
     // Initialize the search
-    $.get('/static/data/current_term', function(current_term_str){
-        $.get("/static/data/search_data_" + current_term_str + ".json", function(search_list){
+    $.get('/static/data/current_term.json', function(current_term_obj){
+        $.get("/static/data/search_data_" + current_term_obj['term_id'] + ".json", function(search_list){
             // get rid of Loading message
             $("#empty_message").empty();
             $("#autocomplete").autocomplete({
