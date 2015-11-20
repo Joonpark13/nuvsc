@@ -1,0 +1,71 @@
+{% extends "layout_shared.html" %}
+{% block body %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-12 col-md-8">
+                <div id="calendar"></div>
+
+                <div class="panel panel-default">
+                    <div class='panel-heading'>
+                        <h4 class='panel-title'>Unscheduled Courses</h4>
+                    </div>
+                    <div class="panel-body" id="unscheduled"></div>
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-md-4">
+                <div class='row'>
+                    <div class='col-md-12'>
+                        <h2 style="margin-top:5px;">Shared Schedule</h2>
+                    </div>
+                    <div class='col-md-6'>
+                        <h4 id="number_of_courses" class='info_headings'>0</h4><h4 class='info_headings'> Classes</h4>
+                    </div>
+                    <div class='col-md-6'>
+                        <h4 id="course_hours" class='info_headings'>0</h4><h4 class='info_headings'> Hours/Week</h4>
+                    </div>
+                </div>
+                <br>
+                <button class='btn btn-default' type='button' data-toggle='modal' data-target='#CAESAR_modal'>I'm Ready to Register</button>
+                <br>
+                <div id='share_div' style="padding-top:5px;">
+                    <a style="display:block;" id='share_link' data-pagekey="{{pagekey}}" href="{{url_for('index') + 'shared/' + pagekey}}">{{'http://www.serif.nu/shared/' + pagekey}}</a>
+                </div>
+                <div id="cart">
+                    <h3>Cart</h3>
+                </div>
+            </div>
+
+        </div><!-- row -->
+
+    </div><!-- container-fluid -->
+
+    <div class='modal' id='update_modal'>
+        <div class='modal-dialog'>
+            <div class='modal-body' id='update_modal-body'></div>
+        </div>
+    </div>
+
+    <div class='modal' id='CAESAR_modal'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <button type-'button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>
+                    <h4 class="modal-title" id='modal_title'>CAESAR Class Nbr List</h4>
+                </div>
+                <div class='modal-body'>
+                    <p>If you're ready to register, follow these steps to quickly put the courses you've chosen in your CAESAR shopping cart.</p>
+                    <ol>
+                        <li>After you've opened CAESAR, click "Enrollment" under the Enrollment box.</li>
+                        <li>Make sure you're in the "add" tab and select your term. Click "Continue".</li>
+                        <li>On the left you should see a little box with "Enter Class Nbr" above it. Enter the numbers listed below to quickly add all of your courses on Serif into your cart!</li>
+                    </ol>
+                    <div class='panel panel-default'>
+                        <div class='panel-body' id='CAESAR'></div>
+                    </div>
+                </div>
+            </div><!-- modal-content -->
+        </div><!-- modal-dialog -->
+    </div><!-- modal -->
+{% endblock %}

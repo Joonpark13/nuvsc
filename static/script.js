@@ -1,5 +1,6 @@
 var idbSupported = false;
 var db;
+var update_done = [];
 
 var current_term = 0;
 var current_school = "";
@@ -65,7 +66,8 @@ function update_terms(){
         alertDiv.attr('id', 'update_terms_alert');
         alertDiv.attr('role', 'alert');
         alertDiv.text('Updating Term data, please wait...');
-        $("#calendar").before(alertDiv);
+        $("#update_modal-body").append(alertDiv);
+        //$("#calendar").before(alertDiv);
         // Initialize objectStore
         var transaction = db.transaction(["term"], "readwrite");
         var store = transaction.objectStore("term");
@@ -84,6 +86,7 @@ function update_terms(){
         }
         transaction.oncomplete = function(){
             $('#update_terms_alert').remove();
+            update_done.push(true);
         }
     });
 }
@@ -96,7 +99,7 @@ function update_schools(){
         alertDiv.attr('id', 'update_schools_alert');
         alertDiv.attr('role', 'alert');
         alertDiv.text('Updating School data, please wait...');
-        $("#calendar").before(alertDiv);
+        $("#update_modal-body").append(alertDiv);
         // Initialize objectStore
         var transaction = db.transaction(["school"], "readwrite");
         var store = transaction.objectStore("school");
@@ -115,6 +118,7 @@ function update_schools(){
         }
         transaction.oncomplete = function(){
             $('#update_schools_alert').remove();
+            update_done.push(true);
         }
     });
 }
@@ -127,7 +131,7 @@ function update_subjects(){
         alertDiv.attr('id', 'update_subjects_alert');
         alertDiv.attr('role', 'alert');
         alertDiv.text('Updating Subject data, please wait...');
-        $("#calendar").before(alertDiv);
+        $("#update_modal-body").append(alertDiv);
         // Initialize objectStore
         var transaction = db.transaction(["subject"], "readwrite");
         var store = transaction.objectStore("subject");
@@ -146,6 +150,7 @@ function update_subjects(){
         }
         transaction.oncomplete = function(){
             $('#update_subjects_alert').remove();
+            update_done.push(true);
         }
     });
 }
@@ -158,7 +163,7 @@ function update_courses(){
         alertDiv.attr('id', 'update_course_alert');
         alertDiv.attr('role', 'alert');
         alertDiv.text('Updating Course data, please wait...');
-        $("#calendar").before(alertDiv);
+        $("#update_modal-body").append(alertDiv);
         // Initialize objectStore
         var transaction = db.transaction(["course"], "readwrite");
         var store = transaction.objectStore("course");
@@ -177,6 +182,7 @@ function update_courses(){
         }
         transaction.oncomplete = function(){
             $('#update_course_alert').remove();
+            update_done.push(true);
         }
     });
 }
@@ -189,7 +195,7 @@ function update_sections(){
         alertDiv.attr('id', 'update_section_alert');
         alertDiv.attr('role', 'alert');
         alertDiv.text('Updating Section data, please wait...');
-        $("#calendar").before(alertDiv);
+        $("#update_modal-body").append(alertDiv);
         // Initialize objectStore
         var transaction = db.transaction(["section"], "readwrite");
         var store = transaction.objectStore("section");
@@ -208,6 +214,7 @@ function update_sections(){
         }
         transaction.oncomplete = function(){
             $('#update_section_alert').remove();
+            update_done.push(true);
         }
     });
 }
@@ -220,7 +227,7 @@ function update_descriptions(){
         alertDiv.attr('id', 'update_description_alert');
         alertDiv.attr('role', 'alert');
         alertDiv.text('Updating Description data, please wait...');
-        $("#calendar").before(alertDiv);
+        $("#update_modal-body").append(alertDiv);
         // Initialize objectStore
         var transaction = db.transaction(["description"], "readwrite");
         var store = transaction.objectStore("description");
@@ -239,6 +246,7 @@ function update_descriptions(){
         }
         transaction.oncomplete = function(){
             $('#update_description_alert').remove();
+            update_done.push(true);
         }
     });
 }
@@ -251,7 +259,7 @@ function update_components(){
         alertDiv.attr('id', 'update_component_alert');
         alertDiv.attr('role', 'alert');
         alertDiv.text('Updating Component data, please wait...');
-        $("#calendar").before(alertDiv);
+        $("#update_modal-body").append(alertDiv);
         // Initialize objectStore
         var transaction = db.transaction(["component"], "readwrite");
         var store = transaction.objectStore("component");
@@ -270,6 +278,7 @@ function update_components(){
         }
         transaction.oncomplete = function(){
             $('#update_component_alert').remove();
+            update_done.push(true);
         }
     });
 }
@@ -602,54 +611,54 @@ function show_sections(inputid){
     } else{
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function(){
-        if (xhttp.readyState == 4 && xhttp.status == 200){
-            // Get ajax sections info
-            text_data = xhttp.responseText;
-            sections_list = parseTextList(text_data);
-            // Set modal title
-            document.getElementById('modal_title').innerHTML = sections_list[0]['course'];
-            // turn into html section links
-            for (var i = 0; i < sections_list.length; i++){
-                var section = sections_list[i];
-                var section_link = document.createElement('a');
-                section_link.setAttribute('id', section['section_id']);
-                section_link.setAttribute('class', 'section_link');
-                section_link.setAttribute('onclick', "add_section_visual(this.id)");
-                section_link.setAttribute('href', 'javascript:;');
-                var times = section['start_time'] + "-" + section['end_time'];
-                if (section['start_time'] == 'None'){
-                    times = "";
-                }
-                var days = section["meeting_days"];
-                if (section['meeting_days'] == null){
-                     days = "Unscheduled";
-                }
-                section_link.innerHTML = "Section " + section['section'] + "  " + days + " " + times + "  " + section['instructor'];
-                // Check if course is aleady in cart
-                var sections_in_cart = document.getElementById("cart").children;
-                for (var j = 0; j < sections_in_cart.length; j++){
-                    // If yes, make link red
-                    if (sections_in_cart[j].id == section['id'] && sections_in_cart[j].getAttribute('class') == "section_cart"){
-                        section_link.style.color = 'red';
+            if (xhttp.readyState == 4 && xhttp.status == 200){
+                // Get ajax sections info
+                text_data = xhttp.responseText;
+                sections_list = parseTextList(text_data);
+                // Set modal title
+                document.getElementById('modal_title').innerHTML = sections_list[0]['course'];
+                // turn into html section links
+                for (var i = 0; i < sections_list.length; i++){
+                    var section = sections_list[i];
+                    var section_link = document.createElement('a');
+                    section_link.setAttribute('id', section['section_id']);
+                    section_link.setAttribute('class', 'section_link');
+                    section_link.setAttribute('onclick', "add_section_visual(this.id)");
+                    section_link.setAttribute('href', 'javascript:;');
+                    var times = section['start_time'] + "-" + section['end_time'];
+                    if (section['start_time'] == 'None'){
+                        times = "";
                     }
+                    var days = section["meeting_days"];
+                    if (section['meeting_days'] == null){
+                         days = "Unscheduled";
+                    }
+                    section_link.innerHTML = "Section " + section['section'] + "  " + days + " " + times + "  " + section['instructor'];
+                    // Check if course is aleady in cart
+                    var sections_in_cart = document.getElementById("cart").children;
+                    for (var j = 0; j < sections_in_cart.length; j++){
+                        // If yes, make link red
+                        if (sections_in_cart[j].id == section['id'] && sections_in_cart[j].getAttribute('class') == "section_cart"){
+                            section_link.style.color = 'red';
+                        }
+                    }
+
+                    var li = document.createElement('li');
+                    li.setAttribute('id', section['section_id'] + '_li');
+                    li.setAttribute('class', 'section_li');
+
+                    var id = section['section_id'];
+                    // insert html section links to dialog div
+                    li.appendChild(section_link);
+                    // hover functionality
+                    $(section_link).hoverIntent(call_add_section_temp.call(this, id), call_remove_section_temp.call(this, id));
+
+                    document.getElementById('modal_ul').appendChild(li);
                 }
-
-                var li = document.createElement('li');
-                li.setAttribute('id', section['section_id'] + '_li');
-                li.setAttribute('class', 'section_li');
-
-                var id = section['section_id'];
-                // insert html section links to dialog div
-                li.appendChild(section_link);
-                // hover functionality
-                $(section_link).hoverIntent(call_add_section_temp.call(this, id), call_remove_section_temp.call(this, id));
-
-                document.getElementById('modal_ul').appendChild(li);
             }
         }
-    }
-    xhttp.open("GET", "/sections/" + inputid, true);
-    xhttp.send(); 
+        xhttp.open("GET", "/sections/" + inputid, true);
+        xhttp.send(); 
     }
 }
 
@@ -791,7 +800,15 @@ function add_section_visual(id){
                     comp_link.setAttribute('class', "component_link");
                     comp_link.setAttribute('href', 'javascript:;');
                     comp_link.style.display = 'block';
-                    comp_link.innerHTML = "<b>" + components[i]['component'] + ":</b> Section " + components[i]['component_section'] + ", " + components[i]['meeting_days'] + " " + components[i]['start_time'] + "-" + components[i]['end_time'] + ", " + components[i]['room'];
+                    var meeting_days = components[i]['meeting_days'];
+                    if (meeting_days == "None"){
+                        meeting_days = "";
+                    }
+                    var time = components[i]['start_time'] + "-" + components[i]['end_time'] + ", ";
+                    if (components[i]['start_time'] == "None"){
+                        time = "";
+                    }
+                    comp_link.innerHTML = "<b>" + components[i]['component'] + ":</b> Section " + components[i]['component_section'] + ", " + meeting_days + " " + time + components[i]['room'];
                     comp_body.appendChild(comp_link);
                     // hover functionality
                     $(comp_link).hoverIntent(
@@ -999,21 +1016,10 @@ function add_section_supported(id){
     var transaction = db.transaction(['section'], 'readonly');
     var store = transaction.objectStore('section');
     var index = store.index("section_id");
-    index.openCursor().onsuccess = function(e){
-        var cursor = e.target.result;
-        if (cursor){
-            if (cursor.value['section_id'] == id){
-                section = cursor.value;
-            }
-            cursor.continue();
-        }
-    }
-    /* WHY DOESN'T THIS WORK!?
-    var getSection = store.get(id);
+    var getSection = store.get(Number(id));
     getSection.onsuccess = function(e){
         section = e.target.result;
     }
-    */
     transaction.oncomplete = function(){
         var transactionD = db.transaction(['description'], 'readonly');
         var storeD = transactionD.objectStore('description');
@@ -1625,11 +1631,42 @@ function back(input){
     }
 }
 
+$('#share_schedule').click(function(){
+    // Take care of second click iterations?
+    $.ajax({
+        method: "POST",
+        url: "/share/",
+        data: JSON.stringify(localStorage),
+        contentType: "application/json; charset=utf-8",
+        dataType: "text",
+        success: function(response){
+            var shared_url = document.createElement('a');
+            $(shared_url).css('display', 'block');
+            $(shared_url).attr('href', window.location.href + 'shared/' + response);
+            $(shared_url).attr('id', 'share_link');
+            shared_url.innerHTML = "http://www.serif.nu/shared/" + response;
+            $('#share_div').append(shared_url);
+
+            $('head').append("<meta property='og:url' content='" + window.location.href + "shared/'" + response + "' />");
+
+            var fb_button = document.createElement('div');
+            $(fb_button).attr('class', 'fb-share-button');
+            $(fb_button).attr('data-href', window.location.href + 'shared/' + response);
+            $(fb_button).attr('data-layout', 'button');
+            $('#share_div').append(fb_button);
+        },
+        error: function(error){
+            console.log(error);
+        }
+    });
+});
+
 $(document).ready(function(){
     set_current_term();
 
     // Check if indexed db is supported
-    //if ("indexedDB" in window){ idbSupported = true; }
+    if ("indexedDB" in window){ idbSupported = true; }
+    if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1){ idbSupported = false; }
 
     if (idbSupported){
         // Open database
@@ -1637,10 +1674,12 @@ $(document).ready(function(){
         // On first visit
         openRequest.onupgradeneeded = function(e){
             // Put an update message
+            /*
             var updateDiv = $(document.createElement('div'));
             updateDiv.attr('class', 'alert alert-success');
             updateDiv.attr('role', 'alert');
-            updateDiv.text("Serif just received an update just in time for registration! You can now hover over courses before selecting them, and search has been streamlined. We're constantly looking to improve the user experience and more features will be added by the time Spring registration rolls around!");
+            updateDiv.text("");
+            */
             $("#calendar").before(updateDiv);
 
             // If localstorage is supported
@@ -1743,7 +1782,13 @@ $(document).ready(function(){
                 // Compare version numbers to see if updates are needed
                 $.get("/static/data/indexedDBversion", function(version_num){
                     // If updates are needed, run update functions
-                    if (parseInt(localStorage.getItem('indexedDBversion')) < parseInt(version_num)){
+                    if (parseInt(localStorage.getItem('indexedDBversion')) < parseInt(version_num) || localStorage.getItem('currentlyUpdating') == "true"){
+                        $('#update_modal').modal({
+                            backdrop:'static',
+                            keyboard:false
+                        })
+                        $('#update_modal').modal('show')
+                        localStorage.setItem('currentlyUpdating', true);
                         update_terms();
                         update_schools();
                         update_subjects();
@@ -1753,6 +1798,13 @@ $(document).ready(function(){
                         update_components();
                         // update version number to new version
                         localStorage.setItem('indexedDBversion', version_num);
+                        var checking = setInterval(function(){
+                            if (update_done.length == 7){
+                                clearInterval(checking);
+                                localStorage.setItem('currentlyUpdating', false);
+                                $('#update_modal').modal('hide')
+                            }
+                        }, 100);
                     }
                 });
             }
@@ -1772,7 +1824,7 @@ $(document).ready(function(){
     $('#calendar').fullCalendar({
         googleCalendarApiKey: 'AIzaSyDEbFn8eSO-K5iIv3LerSaHyonOC7plNcE',
         defaultView: 'agendaWeek',
-        editable: true,
+        //editable: true,
         weekends: false,
         header: false,
         columnFormat: 'ddd',
@@ -1846,9 +1898,12 @@ $(document).ready(function(){
             i++;
         }
     } else{
+        //TODO Make use of modal, not announcements panel
         // If not, display warning message
+        /*
         $('#announcement_panel').css('display', 'initial');
         $('#announcement_body').append("\nYour browser does not support local storage. This means you'll lose your schedule when you close Serif.");
+        */
     }
 
     // Initialize the search

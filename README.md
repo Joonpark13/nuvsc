@@ -8,21 +8,16 @@ Serif is not intended to replace CAESAR - the enrollment of courses still must b
 
 If there is a feature that you would like to see added to Serif, or a functionality that you wish were different somehow, please send a note through the feedback form. This will help Serif become a better service for the students.
 
-The application is written in python (serverside) and javascript (clientside). The <a href='http://flask.pocoo.org/'>flask</a> api is used alongside <a href='http://getbootstrap.com/'>bootstrap</a> among other common packages such as jQuery UI. The data is taken from the <a href='http://developer.asg.northwestern.edu/'>Northwestern Course Data API</a> and is saved to a postgresql database on the local development machine, which then generates static json files for upload to Amazon S3. Through AJAX requests, the data is downloaded and saved clientside using indexedDB for fast access and no server load.
+The application is written in python (serverside) and javascript (clientside). The <a href='http://flask.pocoo.org/'>flask</a> api is used alongside <a href='http://getbootstrap.com/'>bootstrap</a> among other common packages such as jQuery UI. The data is taken from the <a href='http://developer.asg.northwestern.edu/'>Northwestern Course Data API</a> and is saved to a postgresql database on the local development machine, which then generates static json files for upload. Through AJAX requests, the data is downloaded and saved clientside using indexedDB for fast access and no server load. If a browser does not support IndexedDB or has issues with the standard (as is in the case with Safari), then the javascript defaults back to querying the server for information.
 
 The application takes advantage of localStorage in order to save user schedules locally.
 
 Latest Version
 ------------------------------
-V1.5
+V1.6
 CHANGELOG:
 <ul>
-    <li>Added hover and drag functionality for section and component lists</li>
-    <li>Fixed bug where sections without components would force you to choose a component</li>
-    <li>Implemented indexeddb for clientside storage</li>
-    <li>Made indexedDB cursors faster by specifying keyRanges</li>
-    <li>Made every ajax reference a static file</li>
-    <li>Works for indexedDB and no indexedDB</li>
+    <li>Added share button</li>
 </ul>
 
 Author and Contact
