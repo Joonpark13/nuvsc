@@ -1,9 +1,11 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import desc, exc
 from sqlalchemy import orm
 
+import random
+import string
 import json
 from nuapiclient import NorthwesternAPIClient
 
@@ -201,6 +203,13 @@ class Component(db.Model):
         self.component_section = component_section
         self.room = room
 
+class Shared(db.Model):
+    pagekey = db.Column(db.String(), primary_key = True)
+    classesList = db.Column(db.String())
+
+    def __init__(self, pagekey, classesList):
+        self.pagekey = pagekey
+        self.classesList = classesList
 
 def update_terms():
     old_terms = Term.query.all()
@@ -503,6 +512,34 @@ def login():
 def terms_of_service():
     return render_template('terms_of_service.html')
 
+@app.route('/share/', methods = ['GET', 'POST'])
+def share():
+    if request.method == 'POST':
+        localStorage = request.get_json(force = True)
+        worked = False
+        randomString = ''
+        while (not worked):
+            randomString = randomString.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(6))
+            try:
+                db.session.add(Shared(randomString, str(localStorage)))
+                db.session.commit()
+                worked = True
+            except exc.IntegrityError:
+                db.session.rollback()
+    return randomString
+
+@app.route('/shared_data/<pagekey>')
+def shared_data(pagekey):
+    return json.dumps(Shared.query.filter_by(pagekey = pagekey).all()[0].classesList)
+
+@app.route('/shared/<pagekey>')
+def shared(pagekey):
+    return render_template('shared.html', pagekey = pagekey)
+
+@app.route('/shared/')
+def shared_show():
+    return render_template('shared.html')
+
 
 # If IDB not supported
 @app.route('/subjects/<school_symbol>')
@@ -640,6 +677,10 @@ def all_sections_temp():
                                 }
                             )
     return json.dumps(sections_list)
+
+@app.route('/temp')
+def temp():
+    return render_template('temp.html')
 
 if __name__ == '__main__':
     app.run()

@@ -1679,8 +1679,8 @@ $(document).ready(function(){
             updateDiv.attr('class', 'alert alert-success');
             updateDiv.attr('role', 'alert');
             updateDiv.text("");
-            */
             $("#calendar").before(updateDiv);
+            */
 
             // If localstorage is supported
             if(typeof(Storage) !== "undefined"){
