@@ -1648,11 +1648,15 @@ $('#share_schedule').click(function(){
             shared_url.innerHTML = "http://www.serif.nu/shared/" + response;
             $('#share_div').append(shared_url);
 
+            window.open("https://www.facebook.com/sharer/sharer.php?u=" + encodeURI(window.location.href + 'shared/' + response) + "&t=" + document.title, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=300,width=600');
+
+            /*
             var fb_button = document.createElement('div');
             $(fb_button).attr('class', 'fb-share-button');
             $(fb_button).attr('data-href', window.location.href + 'shared/' + response);
             $(fb_button).attr('data-layout', 'button');
             $('#share_div').append(fb_button);
+            */
         },
         error: function(error){
             console.log(error);
