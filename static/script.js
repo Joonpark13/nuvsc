@@ -1633,6 +1633,7 @@ function back(input){
 
 $('#share_schedule').click(function(){
     // Take care of second click iterations?
+    // Take care of no classes case?
     $.ajax({
         method: "POST",
         url: "/share/",
@@ -1646,8 +1647,6 @@ $('#share_schedule').click(function(){
             $(shared_url).attr('id', 'share_link');
             shared_url.innerHTML = "http://www.serif.nu/shared/" + response;
             $('#share_div').append(shared_url);
-
-            $('head').append("<meta property='og:url' content='" + window.location.href + "shared/'" + response + "' />");
 
             var fb_button = document.createElement('div');
             $(fb_button).attr('class', 'fb-share-button');
