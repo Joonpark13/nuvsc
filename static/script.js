@@ -1645,7 +1645,7 @@ $('#share_schedule').click(function(){
             $(shared_url).css('display', 'block');
             $(shared_url).attr('href', window.location.href + 'shared/' + response);
             $(shared_url).attr('id', 'share_link');
-            shared_url.innerHTML = "http://www.serif.nu/shared/" + response;
+            shared_url.innerHTML = window.location.href + 'shared/' + response;
             $('#share_div').append(shared_url);
 
             var fb_button = document.createElement('div');
