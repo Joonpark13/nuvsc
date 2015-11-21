@@ -96,8 +96,7 @@
             <button class='btn btn-default' type='button' data-toggle='modal' data-target='#CAESAR_modal'>I'm Ready to Register</button>
             <br>
             <div id='share_div' style="padding-top:5px;">
-                <button id='share_schedule' class='btn btn-primary btn-sm' type='button'>Share This Schedule</button>
-                <div id='fb_share_btn' class='fb-share-button' data-layout='button'></div>
+                <button id='share_schedule' class='btn btn-primary btn-sm' type='button' data-toggle='modal' data-target='#share_modal'>Share This Schedule</button>
             </div>
             <!--
             <div style="display:inline; padding-top:5px;">
@@ -123,7 +122,7 @@
     <div class='modal-dialog'>
         <div class='modal-content'>
             <div class='modal-header'>
-                <button type-'button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>
+                <button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>
                 <h4 style="display:inline" class="modal-title" id='modal_title'></h4>&nbsp;&nbsp;<span style='font-size:small'>(Drag me!)</span>
             </div>
             <div class='modal-body'>
@@ -137,7 +136,7 @@
     <div class='modal-dialog'>
         <div class='modal-content'>
             <div class='modal-header'>
-                <button type-'button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>
+                <button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>
                 <h4 class="modal-title" id='modal_title'>CAESAR Class Nbr List</h4>
             </div>
             <div class='modal-body'>
@@ -150,6 +149,23 @@
                 <div class='panel panel-default'>
                     <div class='panel-body' id='CAESAR'></div>
                 </div>
+            </div>
+        </div><!-- modal-content -->
+    </div><!-- modal-dialog -->
+</div><!-- modal -->
+
+<div class='modal' id='share_modal'>
+    <div class='modal-dialog'>
+        <div class='modal-content'>
+            <div class='modal-header'>
+                <button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>
+                <h4 class='modal-title'>Share This Schedule</h4>
+            </div>
+            <div class='modal-body'>
+                <p>Here is a link of your current schedule that you can share.</p>
+                <ul id='share_url_ul'></ul>
+                <p style='display:inline;'>Or you can share to Facebook: </p>&nbsp;
+                <div id='fb_share_btn' class='fb-share-button' data-layout='button'></div>
             </div>
         </div><!-- modal-content -->
     </div><!-- modal-dialog -->
