@@ -1655,11 +1655,8 @@ $('#share_schedule').click(function(){
                 href: window.location.href + 'shared/' + response,
             }, function(response){});
             */
-            var fb_button = document.createElement('div');
-            $(fb_button).attr('class', 'fb-share-button');
-            $(fb_button).attr('data-href', window.location.href + 'shared/' + response);
-            $(fb_button).attr('data-layout', 'button');
-            $('#share_div').append(fb_button);
+            $('#fb_share_btn').attr('data-href', window.location.href + 'shared/' + response);
+            $('#fb_share_btn').css('display', 'initial');
         },
         error: function(error){
             console.log(error);

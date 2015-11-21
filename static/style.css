@@ -76,6 +76,10 @@ ul {
     display: none;
 }
 
+#fb_share_btn {
+    display: none;
+}
+
 @media (min-width: 768px){
     #browse_tab {
         overflow-y: scroll;
