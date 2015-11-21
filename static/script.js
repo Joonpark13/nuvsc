@@ -1648,7 +1648,7 @@ $('#share_schedule').click(function(){
             shared_url.innerHTML = "http://www.serif.nu/shared/" + response;
             $('#share_div').append(shared_url);
 
-            window.open("https://www.facebook.com/sharer/sharer.php?u=" + encodeURI(window.location.href + 'shared/' + response) + "&t=" + document.title, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=300,width=600');
+            window.open("//www.facebook.com/sharer/sharer.php?u=" + encodeURI(window.location.href + 'shared/' + response) + "&t=" + document.title, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=300,width=600');
 
             /*
             var fb_button = document.createElement('div');
