@@ -1633,29 +1633,30 @@ function back(input){
 }
 
 $('#share_schedule').click(function(){
-    if ($('#share_url_ul').children().length < 1){
-        // Take care of no classes case?
-        $.ajax({
-            method: "POST",
-            url: "/share/",
-            data: JSON.stringify(localStorage),
-            contentType: "application/json; charset=utf-8",
-            dataType: "text",
-            success: function(response){
-                var shared_url = document.createElement('a');
-                $(shared_url).css('display', 'block');
-                $(shared_url).attr('href', window.location.href + 'shared/' + response);
-                $(shared_url).attr('id', 'share_link');
-                shared_url.innerHTML = window.location.href + 'shared/' + response;
-                $('#share_url_ul').append(shared_url);
-
-                $('#fb_share_btn').attr('data-href', window.location.href + 'shared/' + response);
-            },
-            error: function(error){
-                console.log(error);
-            }
-        });
+    if ($('#share_url_ul').children().length >= 1){
+        $('#share_url_ul').empty();
     }
+    // Take care of no classes case "You cannot share an empty schedule."
+    $.ajax({
+        method: "POST",
+        url: "/share/",
+        data: JSON.stringify(localStorage),
+        contentType: "application/json; charset=utf-8",
+        dataType: "text",
+        success: function(response){
+            var shared_url = document.createElement('a');
+            $(shared_url).css('display', 'block');
+            $(shared_url).attr('href', window.location.href + 'shared/' + response);
+            $(shared_url).attr('id', 'share_link');
+            shared_url.innerHTML = window.location.href + 'shared/' + response;
+            $('#share_url_ul').append(shared_url);
+
+            $('#fb_share_btn').attr('data-href', window.location.href + 'shared/' + response);
+        },
+        error: function(error){
+            console.log(error);
+        }
+    });
 });
 
 $(document).ready(function(){
