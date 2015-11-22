@@ -1657,7 +1657,11 @@ $('#share_schedule').click(function(){
             shared_url.innerHTML = window.location.href + 'shared/' + response;
             $('#share_url_ul').append(shared_url);
 
-            $('#fb_share_btn').attr('data-href', window.location.href + 'shared/' + response);
+            //$('#fb_share_btn').attr('data-href', window.location.href + 'shared/' + response);
+            FB.ui({
+                method: 'share',
+                href: window.location.href + 'shared/' + response,
+            }, function(res){});
 
             FB.XFBML.parse();
         },
