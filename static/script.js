@@ -1652,6 +1652,8 @@ $('#share_schedule').click(function(){
             $('#share_url_ul').append(shared_url);
 
             $('#fb_share_btn').attr('data-href', window.location.href + 'shared/' + response);
+
+            FB.XFBML.parse();
         },
         error: function(error){
             console.log(error);
