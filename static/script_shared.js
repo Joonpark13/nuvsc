@@ -835,18 +835,18 @@ $(document).ready(function(){
         }
     });
 
-    $.get("/shared_data/" + $('#share_link').attr('data-pagekey'), function(classesData){
-        localStorage = JSON.parse(classesData);
-        var i = 0;
-        while (i < localStorage.length){
-            if (localStorage.key(i).split("_")[0] == "component"){
-                dataobj = JSON.parse(localStorage.getItem(localStorage.key(i)));
-                re_add_component(dataobj['component_symbol'], dataobj['id'], dataobj['data']);
-            } else if (localStorage.key(i).split("_")[0] == "section"){
-                dataobj = JSON.parse(localStorage.getItem(localStorage.key(i)));
-                re_add_section(dataobj['id'], dataobj['data'], dataobj['desc']);
+    $.getJSON("/shared_data/" + $('#share_link').attr('data-pagekey'), function(storedData){
+        for (var key in storedData){
+            if (storedData.hasOwnProperty(key)) {
+                if (key.split("_")[0] == "component"){
+                    dataobj = JSON.parse(storedData[key]);
+                    re_add_component(dataobj['component_symbol'], dataobj['id'], dataobj['data']);
+                } else if (key.split("_")[0] == "section"){
+                    dataobj = JSON.parse(storedData[key]);
+                    re_add_section(dataobj['id'], dataobj['data'], dataobj['desc']);
+                }
             }
-            i++;
         }
     });
+
 });

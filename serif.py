@@ -521,7 +521,7 @@ def share():
         while (not worked):
             randomString = randomString.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(6))
             try:
-                db.session.add(Shared(randomString, str(localStorage)))
+                db.session.add(Shared(randomString, json.dumps(localStorage)))
                 db.session.commit()
                 worked = True
             except exc.IntegrityError:
@@ -530,7 +530,7 @@ def share():
 
 @app.route('/shared_data/<pagekey>')
 def shared_data(pagekey):
-    return json.dumps(Shared.query.filter_by(pagekey = pagekey).all()[0].classesList)
+    return Shared.query.filter_by(pagekey = pagekey).all()[0].classesList
 
 @app.route('/shared/<pagekey>')
 def shared(pagekey):
