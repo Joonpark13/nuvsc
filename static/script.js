@@ -1633,6 +1633,12 @@ function back(input){
 }
 
 $('#share_schedule').click(function(){
+    html2canvas(document.body).then(function(canvas) {
+        //document.body.appendChild(canvas);
+        var imgDataUrl = canvas.toDataURL();
+        $('head').append("<meta property='og:image' content='" + imgDataUrl + "' />");
+    });
+
     if ($('#share_url_ul').children().length >= 1){
         $('#share_url_ul').empty();
     }
