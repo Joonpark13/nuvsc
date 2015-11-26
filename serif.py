@@ -494,6 +494,7 @@ def index():
     if request.url == "http://localhost:5000/":
         return render_template("index.html", term = term_name, schools = schools)
     elif request.url[:5] == "http:":
+        print request.url
         redirect(request.url.replace("http:", "https:", 1))
     return render_template("index.html", term = term_name, schools = schools)
 
