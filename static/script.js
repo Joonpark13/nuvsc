@@ -1652,9 +1652,9 @@ $('#share_schedule').click(function(){
         success: function(response){
             var shared_url = document.createElement('a');
             $(shared_url).css('display', 'block');
-            $(shared_url).attr('href', window.location.href + 'shared/' + response);
+            $(shared_url).attr('href', "https://" + window.location.href.substring(4) + 'shared/' + response);
             $(shared_url).attr('id', 'share_link');
-            shared_url.innerHTML = window.location.href + 'shared/' + response;
+            shared_url.innerHTML = "https://" + window.location.href.substring(4) + 'shared/' + response;
             $('#share_url_ul').append(shared_url);
 
             $('#fb_share_btn').attr('data-href', "https://" + window.location.href.substring(4) + 'shared/' + response);
