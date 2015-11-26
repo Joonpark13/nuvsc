@@ -493,8 +493,8 @@ def index():
     schools = School.query.all()
     if request.url == "http://localhost:5000/":
         return render_template("index.html", term = term_name, schools = schools)
-    elif request.url[:5] != "http:":
-        return redirect("https://" + os.environ['URL'])
+    #elif request.url[:5] != "http:":
+    return redirect("https://" + os.environ['URL'])
 
 @app.route('/about')
 def about():
