@@ -491,12 +491,10 @@ def indexedDBversion():
 def index():
     term_name = Term.query.order_by(desc(Term.term_id))[0].name
     schools = School.query.all()
-    """
     if request.url == "http://localhost:5000/":
         return render_template("index.html", term = term_name, schools = schools)
     elif request.url[:5] == "http:":
-        return redirect("https://" + os.environ['URL'] + "/")
-    """
+        redirect(request.url.replace("http:", "https:", 1))
     return render_template("index.html", term = term_name, schools = schools)
 
 @app.route('/about')
