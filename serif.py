@@ -38,6 +38,7 @@ def convertDOWToDays(dow):
 
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
+app.config['PREFERRED_URL_SCHEME'] = 'https'
 client = NorthwesternAPIClient(os.environ['NUAPICLIENT_KEY'])
 db = SQLAlchemy(app)
 
