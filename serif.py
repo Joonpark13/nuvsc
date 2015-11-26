@@ -1,5 +1,6 @@
 import os
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request
+from flask_sslify import SSLify
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import desc, exc
 from sqlalchemy import orm
@@ -37,8 +38,9 @@ def convertDOWToDays(dow):
 
 
 app = Flask(__name__)
+sslify = SSLify(app)
 app.config.from_object(os.environ['APP_SETTINGS'])
-app.config['PREFERRED_URL_SCHEME'] = 'https'
+#app.config['PREFERRED_URL_SCHEME'] = 'https'
 client = NorthwesternAPIClient(os.environ['NUAPICLIENT_KEY'])
 db = SQLAlchemy(app)
 
@@ -491,11 +493,6 @@ def indexedDBversion():
 def index():
     term_name = Term.query.order_by(desc(Term.term_id))[0].name
     schools = School.query.all()
-    if request.url == "http://localhost:5000/":
-        return render_template("index.html", term = term_name, schools = schools)
-    elif request.url[:5] == "http:":
-        print request.url
-        redirect(request.url.replace("http:", "https:", 1))
     return render_template("index.html", term = term_name, schools = schools)
 
 @app.route('/about')
