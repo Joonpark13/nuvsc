@@ -1633,6 +1633,7 @@ function back(input){
 }
 
 $('#share_schedule').click(function(){
+    //TODO
     html2canvas(document.body).then(function(canvas) {
         //document.body.appendChild(canvas);
         var imgDataUrl = canvas.toDataURL();
@@ -1642,7 +1643,7 @@ $('#share_schedule').click(function(){
     if ($('#share_url_ul').children().length >= 1){
         $('#share_url_ul').empty();
     }
-    // Take care of no classes case "You cannot share an empty schedule."
+    //TODO Take care of no classes case "You cannot share an empty schedule."
     $.ajax({
         method: "POST",
         url: "/share/",
@@ -1650,6 +1651,7 @@ $('#share_schedule').click(function(){
         contentType: "application/json; charset=utf-8",
         dataType: "text",
         success: function(response){
+            // Put the link in the modal
             var shared_url = document.createElement('a');
             $(shared_url).css('display', 'block');
             $(shared_url).attr('href', window.location.href + 'shared/' + response);
@@ -1657,6 +1659,7 @@ $('#share_schedule').click(function(){
             shared_url.innerHTML = window.location.href + 'shared/' + response;
             $('#share_url_ul').append(shared_url);
 
+            // Give link as attribute to FB share plugin button
             $('#fb_share_btn').attr('data-href', window.location.href + 'shared/' + response);
             /*
             FB.ui({
