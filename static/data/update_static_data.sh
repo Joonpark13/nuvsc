@@ -15,6 +15,5 @@ mv all_components  all_components.json
 wget http://localhost:5000/all_descriptions
 mv all_descriptions  all_descriptions.json
 wget http://localhost:5000/indexedDBversion
-mv indexedDBversion.1 indexedDBversion
 wget http://localhost:5000/search_data/4610
 mv 4610 search_data_4610.json
