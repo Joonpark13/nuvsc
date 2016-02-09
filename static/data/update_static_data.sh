@@ -16,5 +16,5 @@ wget http://localhost:5000/all_descriptions
 mv all_descriptions  all_descriptions.json
 wget http://localhost:5000/indexedDBversion
 mv indexedDBversion.1 indexedDBversion
-wget http://localhost:5000/search_data/4610
-mv 4610 search_data_4610.json
+wget http://localhost:5000/search_data/4620
+mv 4620 search_data_4620.json
