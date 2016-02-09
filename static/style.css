@@ -73,7 +73,7 @@ ul {
 }
 
 #announcement_panel {
-    /*display: none;*/
+    display: none;
 }
 
 @media (min-width: 768px){
