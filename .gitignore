@@ -10,3 +10,4 @@ upload_dump.sh
 update_spring2016_start.sh
 update_spring2016_end.sh
 update_most_recent_term.py
+static/data/update_static_data.sh
