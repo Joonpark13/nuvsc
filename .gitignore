@@ -7,7 +7,7 @@ cache.dump
 create_dump.sh
 upload_dump.sh
 .idea/
-update_spring2016_start.sh
-update_spring2016_end.sh
+update_*_start.sh
+update_*_end.sh
 update_most_recent_term.py
 static/data/update_static_data.sh
