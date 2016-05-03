@@ -4,7 +4,6 @@ var db;
 var current_term = 0;
 var current_school = "";
 var current_subject = [];
-var current_temp = [];
 var comp_selected = true;
 
 function parseTextList(li){
