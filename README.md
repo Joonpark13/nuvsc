@@ -1,5 +1,10 @@
 # Serif: A Visual Shopping Cart for Northwestern University
 
+## UPDATE: *This repository is now outdated*. Serif is currently being rebuilt from the ground up! Track the progress at [https://github.com/Joonpark13/serif](https://github.com/Joonpark13/serif)
+Changes include: All new visual design done in Google's Material Design, rebuilt using Facebook's React, development using github workflow (including actually helpful commit messages, yay!), and more.
+
+<br><br>
+
 What is it?
 ------------------------------
 Serif is a web application designed to be the ultimate preparation tool for student schedule preparation at Northwestern. Originally constructed to combat CAESAR's inability to view the shopping cart in a weekly view, Serif is continually being developed to add more features that will help the student experience.
