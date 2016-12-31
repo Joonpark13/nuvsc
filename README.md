@@ -1,7 +1,7 @@
 # Serif: A Visual Shopping Cart for Northwestern University
 
-## UPDATE: *This repository is now outdated*. Serif is currently being rebuilt from the ground up! Track the progress at [https://github.com/Joonpark13/serif](https://github.com/Joonpark13/serif)
-Changes include: All new visual design done in Google's Material Design, rebuilt using Facebook's React, development using github workflow (including actually helpful commit messages, yay!), and more.
+## UPDATE: *This repository is now outdated*. Find the all new Serif here: [https://github.com/Joonpark13/serif](https://github.com/Joonpark13/serif)
+Changes include: All new visual design done in Google's Material Design, rebuilt using Facebook's React, state stored using Redux, development using github workflow (including actually helpful commit messages, yay!), and more.
 
 <br><br>
 
